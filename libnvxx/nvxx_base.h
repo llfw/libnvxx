@@ -49,8 +49,7 @@ protected:
 	friend struct bsd::const_nv_list;
 
 	__nv_list_base(int __flags = 0);
-	__nv_list_base(::nvlist_t *,
-		       nvlist_owning = nvlist_owning::owning);
+	__nv_list_base(::nvlist_t *, nvlist_owning);
 
 	__nv_list_base(__nv_list_base const &) = delete;
 	__nv_list_base(__nv_list_base &&) noexcept = delete;
