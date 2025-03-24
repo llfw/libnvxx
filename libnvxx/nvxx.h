@@ -28,5 +28,6 @@
  */
 
 #include "nvxx_base.h"
+#include "nvxx_iterator.h"
 
 #endif	/* !_NVXX_H_INCLUDED */
