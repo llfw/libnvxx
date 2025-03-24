@@ -27,6 +27,13 @@ the basic API is very similar to the C libnv API:
 	assert(nvl.exists_number("the answer"));
 	std::print("{0}\n", nvl.get_number("the answer"));
 
+iterator interface:
+
+	for (auto [name, value] : nvl) {
+		std::print("key = {0}\n", name);
+		// do something with value...
+	}
+
 infrequently asked questions:
 
 Q: what version of FreeBSD does libnvxx require?
