@@ -81,14 +81,8 @@ TEST_CASE(nvxx_basic_iterate)
 	nvl3.add_number("an array number", 4242);
 	nvl.add_nvlist_array("an nvlist array", std::span{&nvl3, 1});
 
-	auto begin = std::ranges::begin(nvl);
-	auto end = std::ranges::end(nvl);
-
 	auto i = 0u;
-	while (begin != end) {
-		auto name = begin->first;
-		auto const &value = begin->second;
-
+	for (auto &[name, value] : nvl) {
 		if (std::holds_alternative<std::uint64_t>(value)) {
 			ATF_REQUIRE_EQ("a number"sv, name);
 			ATF_REQUIRE_EQ(42, std::get<std::uint64_t>(value));
@@ -167,7 +161,6 @@ TEST_CASE(nvxx_basic_iterate)
 			ATF_REQUIRE_EQ(true, false);
 
 		++i;
-		++begin;
 	}
 
 	ATF_REQUIRE_EQ(12, i);
