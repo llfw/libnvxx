@@ -343,6 +343,28 @@ struct __nv_list : virtual __nv_list_base {
 		add_number_range(__key, __arr);
 	}
 
+	/* add_descriptor_range */
+
+	template<std::ranges::contiguous_range _Range>
+		requires std::is_same_v<int,
+			std::remove_cvref_t<
+				std::ranges::range_value_t<_Range>>>
+	void add_descriptor_range(std::string_view __key, _Range &&__value)
+	{
+		add_descriptor_array(__key, std::span(__value));
+	}
+
+	template<std::ranges::range _Range>
+		requires (
+			!std::ranges::contiguous_range<_Range>
+			&& std::is_same_v<int,
+				std::remove_cvref_t<
+					std::ranges::range_value_t<_Range>>>)
+	void add_descriptor_range(std::string_view __key, _Range &&__value)
+	{
+		auto __arr = std::vector(std::from_range, __value);
+		add_descriptor_range(__key, __arr);
+	}
 
 	/* add_string_range */
 

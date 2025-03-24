@@ -183,6 +183,9 @@ struct nv_list : <unspecified> {
 	template<std::ranges::range Range>
 	void add_string_range(std::string_view key, _Range &&);
 
+	template<std::ranges::range Range>
+	void add_descriptor_range(std::string_view key, _Range &&);
+
 	// exposition only
 	auto take_bool_array(std::string_view key) -> container-type<bool>;
 	auto take_number_array(std::string_view key) -> container-type<std::uint64_t>;
