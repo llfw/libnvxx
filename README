@@ -25,7 +25,7 @@ the basic API is very similar to the C libnv API:
 	auto nvl = bsd::nv_list();
 	nvl.add_number("the answer", 42);
 	assert(nvl.exists_number("the answer"));
-	std::print("{0}", nvl.get_number("the answer"));
+	std::print("{0}\n", nvl.get_number("the answer"));
 
 infrequently asked questions:
 
