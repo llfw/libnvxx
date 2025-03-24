@@ -123,25 +123,31 @@ nv_list_iterator::__advance()
 	case NV_TYPE_NULL:
 		__current = std::make_pair(name, nullptr);
 		break;
+
 	case NV_TYPE_BOOL:
 		__current = std::make_pair(name, cnvlist_get_bool(__cookie));
 		break;
+
 	case NV_TYPE_NUMBER:
 		__current = std::make_pair(name, cnvlist_get_number(__cookie));
 		break;
+
 	case NV_TYPE_STRING:
 		__current = std::make_pair(name,
 				std::string_view(
 					cnvlist_get_string(__cookie)));
 		break;
+
 	case NV_TYPE_NVLIST:
 		__current = std::make_pair(name,
 				const_nv_list(cnvlist_get_nvlist(__cookie)));
 		break;
+
 	case NV_TYPE_DESCRIPTOR:
 		__current = std::make_pair(name,
 					   cnvlist_get_descriptor(__cookie));
 		break;
+
 	case NV_TYPE_BINARY: {
 		auto nitems = std::size_t{};
 		auto ptr = cnvlist_get_binary(__cookie, &nitems);
@@ -149,6 +155,7 @@ nv_list_iterator::__advance()
 		__current = std::make_pair(name, span);
 		break;
 	}
+
 	default:
 		std::abort();
 	}

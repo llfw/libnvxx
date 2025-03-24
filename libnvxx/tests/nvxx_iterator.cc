@@ -40,10 +40,30 @@ TEST_CASE(nvxx_basic_iterate)
 {
 	using namespace std::literals;
 	auto nvl = bsd::nv_list();
+	int fds[2];
 
+	auto binary = std::array<std::byte, 4>{
+		static_cast<std::byte>(1),
+		static_cast<std::byte>(2),
+		static_cast<std::byte>(3),
+		static_cast<std::byte>(4)
+	};
+
+	auto ret = ::pipe(fds);
+	ATF_REQUIRE_EQ(0, ret);
+
+	nvl.add_null("a null");
 	nvl.add_number("a number", 42);
 	nvl.add_string("a string", "a test string");
 	nvl.add_bool("a bool", true);
+	nvl.add_binary("a binary", binary);
+
+	auto fdesc = fds[0];
+	nvl.move_descriptor("an fd", fdesc);
+
+	auto nvl2 = bsd::nv_list();
+	nvl2.add_number("child number", 666);
+	nvl.add_nvlist("an nvlist", nvl2);
 
 	auto begin = std::ranges::begin(nvl);
 	auto end = std::ranges::end(nvl);
@@ -56,20 +76,45 @@ TEST_CASE(nvxx_basic_iterate)
 		if (std::holds_alternative<std::uint64_t>(value)) {
 			ATF_REQUIRE_EQ("a number"sv, name);
 			ATF_REQUIRE_EQ(42, std::get<std::uint64_t>(value));
+
+		} else if (std::holds_alternative<nullptr_t>(value)) {
+			ATF_REQUIRE_EQ("a null"sv, name);
+			ATF_REQUIRE_EQ(nullptr,
+				       std::get<nullptr_t>(value));
+
 		} else if (std::holds_alternative<std::string_view>(value)) {
 			ATF_REQUIRE_EQ("a string"sv, name);
 			ATF_REQUIRE_EQ("a test string",
 				       std::get<std::string_view>(value));
+
 		} else if (std::holds_alternative<bool>(value)) {
 			ATF_REQUIRE_EQ("a bool"sv, name);
 			ATF_REQUIRE_EQ(true, std::get<bool>(value));
+
+		} else if (std::holds_alternative<int>(value)) {
+			ATF_REQUIRE_EQ("an fd"sv, name);
+			ATF_REQUIRE_EQ(fdesc, std::get<int>(value));
+
+		} else if (std::holds_alternative<
+			   	std::span<std::byte const>>(value)) {
+			ATF_REQUIRE_EQ("a binary"sv, name);
+			auto data = std::get<std::span<std::byte const>>(value);
+			ATF_REQUIRE_EQ(true, std::ranges::equal(binary, data));
+
+		} else if (std::holds_alternative<bsd::const_nv_list>(value)) {
+			ATF_REQUIRE_EQ("an nvlist"sv, name);
+			ATF_REQUIRE_EQ(666,
+				       std::get<bsd::const_nv_list>(value)
+				       		.get_number("child number"));
+
 		} else
 			ATF_REQUIRE_EQ(true, false);
 
 		++i;
 		++begin;
 	}
-	ATF_REQUIRE_EQ(3, i);
+
+	ATF_REQUIRE_EQ(7, i);
 }
 
 ATF_INIT_TEST_CASES(tcs)
