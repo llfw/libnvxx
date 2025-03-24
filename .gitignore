@@ -1,0 +1,12 @@
+*.swp
+*.o
+*.a
+*.so
+*.so.*
+*.pico
+*.core
+*.full
+*.debug
+.depend*
+Kyuafile
+/libnvxx/tests/nvxx_basic

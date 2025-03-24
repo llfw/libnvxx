@@ -1,0 +1,80 @@
+libnvxx is a lightweight C++ wrapper around FreeBSD's libnv.  it allows you to
+interoperate with C code that uses libnv, which is becoming fairly common on
+FreeBSD.
+
+priority is given to a clean and idiomatic C++ API for the library.  this means
+in some cases the API is less efficient than it could be; for example, it
+sometimes requires data copies which are, strictly speaking, not necessary. 
+this is not considered a problem in practice, since the overhead is still very
+low, and using libnv in a tight loop would be fairly unusual.
+
+to build and install the library:
+
+% make
+% su
+# make install
+# kyua test --kyuafile /usr/local/tests/nvxx/Kyuafile
+
+to use the library:
+
+#include <nvxx.h> and link with -lnvxx.  if you link statically, you also need
+to link with -lnv.
+
+the basic API is very similar to the C libnv API:
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number("the answer", 42);
+	assert(nvl.exists_number("the answer"));
+	std::print("{0}", nvl.get_number("the answer"));
+
+infrequently asked questions:
+
+Q: what version of FreeBSD does libnvxx require?
+A: libnvxx is developed and tested on FreeBSD 15.0-CURRENT.  it will probably
+   work on earlier versions, as long as the C++ compiler is sufficiently
+   capable.
+
+Q: what version of C++ does libnvxx require?
+A: libnvxx requires C++23 (or later).
+
+Q: but isn't FreeBSD's implementation of C++23 rather incomplete?
+A: yes.  however, libnvxx only uses the parts which are implemented in the
+   version of LLVM that FreeBSD ships in base.
+
+Q: doesn't the public API only require C++20?
+A: this may be the case, i haven't verified it.  if so, patches to support
+   C++20 for the public API would probably be accepted.
+
+Q: why is the type called bsd::nv_list instead of bsd::nvlist?
+A: because <sys/nv_namespace.h> does "#define nvlist FreeBSD_nvlist", which
+   would cause issues with symbol names in the ABI.
+
+Q: i found a bug and i have a patch that fixes it.
+A: that's not a question.
+
+Q: i found a bug and i have a patch that fixes it?
+A: please open a pull request on the GitHub repository.
+
+Q: what if i found a bug but i don't have a patch?
+A: in that case please open an issue on the GitHub repository, preferably with
+   a minimal test case.
+
+Q: why wrap libnv instead of creating a C++ version from scratch?
+A: the primary use-case of libnv in C++ is to interoperate with existing C APIs
+   and protocols which use libnv.  this requires using libnv in order to, for
+   example, pass nvlists between C and C++ code.
+
+   unlike in C, there is little reason to use libnv in C++ native code for data
+   storage, since we already have a rich template library for that.
+
+Q: why does the library abort on invalid operations instead of throwing an
+   exception?
+A: because this is how libnv works and there's no way to override it.
+
+Q: do you intend to submit this for inclusion in the FreeBSD base system?
+A: eventually, yes, but not until there are some actual users of it to justify
+   importing it.
+
+Q: is this why you're using <bsd.lib.mk> instead of something more sensible
+   like CMake?
+A: precisely!

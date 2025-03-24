@@ -1,0 +1,205 @@
+.\" This is free and unencumbered software released into the public domain.
+.\"
+.\" Anyone is free to copy, modify, publish, use, compile, sell, or distribute
+.\" this software, either in source code form or as a compiled binary, for any
+.\" purpose, commercial or non-commercial, and by any means.
+.\"
+.\" In jurisdictions that recognize copyright laws, the author or authors of
+.\" this software dedicate any and all copyright interest in the software to the
+.\" public domain. We make this dedication for the benefit of the public at
+.\" large and to the detriment of our heirs and successors. We intend this
+.\" dedication to be an overt act of relinquishment in perpetuity of all present
+.\" and future rights to this software under copyright law.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+.\" AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+.\" ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+.\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.Dd March 24, 2025
+.Dt NVXX 3
+.Os
+.Sh NAME
+.Nm nvxx
+.Nd C++ interface for
+.Xr nv 9
+.Sh LIBRARY
+.Lb libnvxx
+.Sh SYNOPSIS
+.In nvxx.h
+.\" unfortunately, mdoc is not really set up for documenting C++ classes.
+.Bd -literal
+namespace bsd {
+
+// exposition only
+template<typename T>
+using container-type = ...;
+
+// exposition only
+struct const_nv_list : <unspecified> {
+	const_nv_list();
+	explicit const_nv_list(::nvlist_t const *);
+	const_nv_list(const_nv_list const &);
+
+	const_nv_list &operator=(const_nv_list const &);
+	const_nv_list &operator=(nv_list const &);
+
+	::nvlist_t const *ptr() const;
+
+	void dump(int fd) const;
+	void fdump(std::FILE *fp) const;
+
+	std::size_t packed_size() const;
+	std::vector<std::byte> pack() const;
+
+	std::error_code error() const;
+
+	explicit operator bool() const;
+
+	bool empty() const;
+	int flags() const;
+	bool in_array() const;
+
+	void send(int fd) const;
+
+	bool exists(std::string_view key) const;
+	bool exists_null(std::string_view key) const;
+	bool exists_bool(std::string_view key) const;
+	bool exists_number(std::string_view key) const;
+	bool exists_string(std::string_view key) const;
+	bool exists_binary(std::string_view key) const;
+	bool exists_nvlist(std::string_view key) const;
+	bool exists_descriptor(std::string_view key) const;
+
+	auto get_bool(std::string_view key) const -> bool;
+	auto get_number(std::string_view key) const -> std::uint64_t;
+	auto get_string(std::string_view key) const -> std::string_view;
+	auto get_descriptor(std::string_view key) const -> int;
+	auto get_nvlist(std::string_view key) const -> const_nv_list;
+
+	// exposition only
+	auto get_binary(std::string_view key) const -> container-type<std::byte const>;
+
+	bool exists_bool_array(std::string_view key) const;
+	bool exists_number_array(std::string_view key) const;
+	bool exists_string_array(std::string_view key) const;
+	bool exists_descriptor_array(std::string_view key) const;
+	bool exists_nvlist_array(std::string_view key) const;
+
+	// exposition only
+	auto get_bool_array(std::string_view key) const -> container-type<bool const>;
+	auto get_number_array(std::string_view key) const -> container-type<std::uint64_t const>;
+	auto get_string_array(std::string_view key) const -> container-type<std::string_view>;
+	auto get_descriptor_array(std::string_view key) const -> container-type<int const>;
+	auto get_nvlist_array(std::string_view key) const -> container-type<const_nv_list>;
+};
+
+// exposition only
+struct nv_list : <unspecified> {
+	explicit nv_list(int flags = 0);
+	explicit nv_list(::nvlist_t *);
+	nv_list(nv_list const &);
+	nv_list(nv_list &&);
+
+	nv_list &operator=(nv_list const &);
+	nv_list &operator=(nv_list &&);
+
+	::nvlist_t *ptr();
+	::nvlist_t const *ptr() const;
+
+	::nvlist_t *release() &&;
+
+	void set_error(int error);
+
+	void free(std::string_view name);
+
+	operator const_nv_list() const;
+
+	void add_null(std::string_view key);
+	void add_bool(std::string_view key, bool value);
+	void add_number(std::string_view key, std::uint64_t);
+	void add_string(std::string_view key, std::string_view);
+	void add_descriptor(std::string_view key, int);
+	void add_nvlist(std::string_view key, const_nv_list const &);
+	void add_binary(std::string_view key, std::span<std::byte const>);
+
+	void move_string(std::string_view key, char *);
+	void move_descriptor(std::string_view key, int);
+	void move_binary(std::string_view key, std::span<std::byte>);
+	void move_nvlist(std::string_view key, nv_list &&);
+	void move_nvlist(std::string_view key, ::nvlist_t *);
+
+	void free_null(std::string_view key);
+	void free_bool(std::string_view key);
+	void free_number(std::string_view key);
+	void free_string(std::string_view key);
+	void free_descriptor(std::string_view key);
+	void free_binary(std::string_view key);
+	void free_nvlist(std::string_view key);
+
+	auto take_bool(std::string_view key) -> bool;
+	auto take_number(std::string_view key) -> std::uint64_t;
+	auto take_string(std::string_view key) -> std::string;
+	auto take_descriptor(std::string_view key) -> int;
+	auto take_nvlist(std::string_view key) -> nv_list;
+
+	void move_bool_array(std::string_view key, std::span<bool>);
+	void move_number_array(std::string_view key, std::span<std::uint64_t>);
+	void move_string_array(std::string_view key, std::span<char *>);
+	void move_descriptor_array(std::string_view key, std::span<int>);
+	void move_nvlist_array(std::string_view key, std::span<::nvlist_t *>);
+
+	void append_bool_array(std::string_view key, bool);
+	void append_number_array(std::string_view key, std::uint64_t);
+	void append_string_array(std::string_view key, std::string_view);
+	void append_descriptor_array(std::string_view key, int);
+	void append_nvlist_array(std::string_view key, const_nv_list const &);
+
+	void free_bool_array(std::string_view key);
+	void free_number_array(std::string_view key);
+	void free_string_array(std::string_view key);
+	void free_nvlist_array(std::string_view key);
+	void free_descriptor_array(std::string_view key);
+
+	void add_bool_array(std::string_view key, std::span<bool const>);
+	void add_number_array(std::string_view key, std::span<std::uint64_t const>);
+	void add_string_array(std::string_view key, std::span<std::string_view const>);
+	void add_descriptor_array(std::string_view key, std::span<int const>);
+	void add_nvlist_array(std::string_view key, std::span<const_nv_list const>);
+	void add_nvlist_array(std::string_view key, std::span<nv_list const>);
+
+	// exposition only
+
+	template<std::ranges::range Range>
+	void add_bool_range(std::string_view key, Range &&);
+
+	template<std::ranges::range Range>
+	void add_number_range(std::string_view key, Range &&);
+
+	template<std::ranges::range Range>
+	void add_binary_range(std::string_view key, Range &&);
+
+	template<std::ranges::range Range>
+	void add_string_range(std::string_view key, _Range &&);
+
+	// exposition only
+	auto take_bool_array(std::string_view key) -> container-type<bool>;
+	auto take_number_array(std::string_view key) -> container-type<std::uint64_t>;
+	auto take_string_array(std::string_view key) -> container-type<std::string>;
+	auto take_nvlist_array(std::string_view key) -> container-type<nv_list>;
+	auto take_descriptor_array(std::string_view __key) -> container-type<int>;
+	auto take_binary(std::string_view key) -> container-type<std::byte>;
+};
+
+} // namespace bsd
+.Ed
+.Sh DESCRIPTION
+The
+.Nm
+library provides a C++ wrapper around the
+.Xr nv 9
+C library.
+The library is ABI compatible with the C library, in the case that it can both
+consume and produce pointers of type
+.Vt nvlist_t .
