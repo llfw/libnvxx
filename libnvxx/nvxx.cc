@@ -56,19 +56,20 @@ namespace bsd {
  */
 
 const_nv_list::const_nv_list() noexcept
-	: __nv_list_base(nullptr, nvlist_owning::non_owning)
+	: __nv_list_base(nullptr, __detail::__nvlist_owning::__non_owning)
 {
 }
 
 // const_cast is safe here since a non-owning nvlist is never modified.
 const_nv_list::const_nv_list(::nvlist_t const *nvl) noexcept
 	: __nv_list_base(const_cast<::nvlist_t *>(nvl),
-			 nvlist_owning::non_owning)
+			 __detail::__nvlist_owning::__non_owning)
 {
 }
 
 const_nv_list::const_nv_list(const_nv_list const &other) noexcept
-	: __nv_list_base(other.__m_nv, nvlist_owning::non_owning)
+	: __nv_list_base(other.__m_nv,
+			 __detail::__nvlist_owning::__non_owning)
 {
 }
 
@@ -110,13 +111,13 @@ nv_list::nv_list(int flags)
 }
 
 nv_list::nv_list(::nvlist_t *nvl) noexcept
-	: __nv_list_base(nvl, nvlist_owning::owning)
+	: __nv_list_base(nvl, __detail::__nvlist_owning::__owning)
 {
 }
 
 nv_list::nv_list(nv_list const &other)
 	: __nv_list_base(::nvlist_clone(other.__m_nv),
-			 nvlist_owning::owning)
+			 __detail::__nvlist_owning::__owning)
 {
 	if (__m_nv == nullptr)
 		throw std::system_error(
@@ -125,7 +126,7 @@ nv_list::nv_list(nv_list const &other)
 
 nv_list::nv_list(nv_list &&other) noexcept
 	: __nv_list_base(std::exchange(other.__m_nv, nullptr),
-			 nvlist_owning::owning)
+			 __detail::__nvlist_owning::__owning)
 {
 }
 
@@ -140,7 +141,7 @@ nv_list::operator=(nv_list const &other)
 						std::system_category()));
 		__free_nv();
 		__m_nv = clone;
-		__m_owning = nvlist_owning::owning;
+		__m_owning = __detail::__nvlist_owning::__owning;
 	}
 
 	return *this;
@@ -151,7 +152,7 @@ nv_list::operator=(nv_list &&other) noexcept
 {
 	if (this != &other) {
 		__m_nv = std::exchange(other.__m_nv, nullptr);
-		__m_owning = nvlist_owning::owning;
+		__m_owning = __detail::__nvlist_owning::__owning;
 	}
 
 	return *this;
@@ -223,14 +224,14 @@ namespace bsd::__detail {
 
 __nv_list_base::__nv_list_base(int flags)
 	: __m_nv(::nvlist_create(flags))
-	, __m_owning(nvlist_owning::owning)
+	, __m_owning(__nvlist_owning::__owning)
 {
 	if (__m_nv == nullptr)
 		throw std::system_error(
 			std::error_code(errno, std::system_category()));
 }
 
-__nv_list_base::__nv_list_base(nvlist_t *nv, nvlist_owning owning)
+__nv_list_base::__nv_list_base(nvlist_t *nv, __nvlist_owning owning)
 	: __m_nv(nv)
 	, __m_owning(owning)
 {
@@ -246,7 +247,7 @@ void
 __nv_list_base::__free_nv() noexcept
 {
 	if ((__m_nv != nullptr) &&
-	    (__m_owning == nvlist_owning::owning))
+	    (__m_owning == __nvlist_owning::__owning))
 		::nvlist_destroy(__m_nv);
 }
 

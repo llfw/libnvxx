@@ -37,19 +37,19 @@ namespace bsd {
 struct nv_list;
 struct const_nv_list;
 
-enum struct nvlist_owning {
-	owning,
-	non_owning
-};
-
 namespace __detail {
+
+enum struct __nvlist_owning {
+	__owning,
+	__non_owning
+};
 
 struct __nv_list_base {
 protected:
 	friend struct bsd::const_nv_list;
 
 	__nv_list_base(int __flags = 0);
-	__nv_list_base(::nvlist_t *, nvlist_owning);
+	__nv_list_base(::nvlist_t *, __nvlist_owning);
 
 	__nv_list_base(__nv_list_base const &) = delete;
 	__nv_list_base(__nv_list_base &&) noexcept = delete;
@@ -61,7 +61,7 @@ protected:
 	void __free_nv() noexcept;
 
 	::nvlist_t *__m_nv{};
-	nvlist_owning __m_owning;
+	__nvlist_owning __m_owning;
 };
 
 struct __const_nv_list : virtual __nv_list_base {
