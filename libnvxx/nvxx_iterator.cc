@@ -156,6 +156,58 @@ nv_list_iterator::__advance()
 		break;
 	}
 
+	case NV_TYPE_BOOL_ARRAY: {
+		auto nitems = std::size_t{};
+		auto ptr = cnvlist_get_bool_array(__cookie, &nitems);
+		auto span = std::span{ptr, nitems};
+		__current = std::make_pair(name, span);
+		break;
+	}
+
+	case NV_TYPE_NUMBER_ARRAY: {
+		auto nitems = std::size_t{};
+		auto ptr = cnvlist_get_number_array(__cookie, &nitems);
+		auto span = std::span{ptr, nitems};
+		__current = std::make_pair(name, span);
+		break;
+	}
+
+	case NV_TYPE_STRING_ARRAY: {
+		auto nitems = std::size_t{};
+		auto ptr = cnvlist_get_string_array(__cookie, &nitems);
+		auto span = std::span{ptr, nitems};
+		auto vector =
+			span
+			| std::views::transform([] (char const *ptr) {
+				return std::string_view(ptr);
+			})
+			| std::ranges::to<std::vector>();
+		__current = std::make_pair(name, vector);
+		break;
+	}
+
+	case NV_TYPE_DESCRIPTOR_ARRAY: {
+		auto nitems = std::size_t{};
+		auto ptr = cnvlist_get_descriptor_array(__cookie, &nitems);
+		auto span = std::span{ptr, nitems};
+		__current = std::make_pair(name, span);
+		break;
+	}
+
+	case NV_TYPE_NVLIST_ARRAY: {
+		auto nitems = std::size_t{};
+		auto ptr = cnvlist_get_nvlist_array(__cookie, &nitems);
+		auto span = std::span{ptr, nitems};
+		auto vector =
+			span
+			| std::views::transform([] (::nvlist_t const *ptr) {
+				return const_nv_list(ptr);
+			})
+			| std::ranges::to<std::vector>();
+		__current = std::make_pair(name, vector);
+		break;
+	}
+
 	default:
 		std::abort();
 	}

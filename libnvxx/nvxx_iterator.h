@@ -45,7 +45,12 @@ using nv_list_value_t = std::variant<
 	std::string_view,		/* string */
 	const_nv_list,			/* nvlist */
 	int,				/* descriptor */
-	std::span<std::byte const>	/* binary */
+	std::span<std::byte const>,	/* binary */
+	std::span<bool const>,		/* bool array */
+	std::span<std::uint64_t const>,	/* number array */
+	std::vector<std::string_view>,	/* string array */
+	std::span<int const>,		/* descriptor array */
+	std::vector<const_nv_list>	/* nvlist array */
 >;
 
 // the iterator value type
