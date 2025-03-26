@@ -196,6 +196,15 @@ TEST_CASE(nvxx_add_bool_array)
 	ATF_REQUIRE_EQ(false, nvl.exists(key));
 }
 
+TEST_CASE(nvxx_get_nonexistent_bool_array)
+{
+	auto nvl = bsd::nv_list();
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_bool_array("nonesuch"));
+}
+
 TEST_CASE(nvxx_add_duplicate_bool_array)
 {
 	using namespace std::literals;
@@ -347,6 +356,15 @@ TEST_CASE(nvxx_add_number_array)
 	ATF_REQUIRE_EQ(false, nvl.exists(key));
 }
 
+TEST_CASE(nvxx_get_nonexistent_number_array)
+{
+	auto nvl = bsd::nv_list();
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_number_array("nonesuch"));
+}
+
 TEST_CASE(nvxx_add_duplicate_number_array)
 {
 	using namespace std::literals;
@@ -486,6 +504,15 @@ TEST_CASE(nvxx_add_string_array)
 	auto data3 = nvl.take_string_array(key);
 	ATF_REQUIRE_EQ(true, std::ranges::equal(data, data3));
 	ATF_REQUIRE_EQ(false, nvl.exists(key));
+}
+
+TEST_CASE(nvxx_get_nonexistent_string_array)
+{
+	auto nvl = bsd::nv_list();
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_string_array("nonesuch"));
 }
 
 TEST_CASE(nvxx_add_duplicate_string_array)
@@ -645,6 +672,15 @@ TEST_CASE(nvxx_add_nvlist_array)
 	ATF_REQUIRE_EQ(n2, 2);
 }
 
+TEST_CASE(nvxx_get_nonexistent_nvlist_array)
+{
+	auto nvl = bsd::nv_list();
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_nvlist_array("nonesuch"));
+}
+
 TEST_CASE(nvxx_add_duplicate_nvlist_array)
 {
 	using namespace std::literals;
@@ -658,6 +694,10 @@ TEST_CASE(nvxx_add_duplicate_nvlist_array)
 			     "key \"test_nvlist\" already exists",
 			     nvl.add_nvlist_range(key, value));
 }
+
+/*
+ * descriptor
+ */
 
 TEST_CASE(nvxx_add_descriptor)
 {
@@ -688,6 +728,15 @@ TEST_CASE(nvxx_add_descriptor)
 	ATF_REQUIRE_EQ('2', buf[1]);
 	ATF_REQUIRE_EQ('3', buf[2]);
 	ATF_REQUIRE_EQ('4', buf[3]);
+}
+
+TEST_CASE(nvxx_get_nonexistent_descriptor)
+{
+	auto nvl = bsd::nv_list();
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_descriptor("nonesuch"));
 }
 
 TEST_CASE(nvxx_add_duplicate_descriptor)
@@ -747,6 +796,16 @@ TEST_CASE(nvxx_add_duplicate_binary)
 			     nvl.add_binary(key, value));
 }
 
+TEST_CASE(nvxx_get_nonexistent_binary)
+{
+	auto nvl = bsd::nv_list();
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_binary("nonesuch"));
+}
+
+
 TEST_CASE(nvxx_take_binary)
 {
 	using namespace std::literals;
@@ -801,6 +860,7 @@ ATF_INIT_TEST_CASES(tcs)
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_bool_array);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_bool_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_range);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_contig_range);
 
@@ -812,6 +872,7 @@ ATF_INIT_TEST_CASES(tcs)
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_number_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_number_array);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_number_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_number_range);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_number_contig_range);
 
@@ -823,6 +884,7 @@ ATF_INIT_TEST_CASES(tcs)
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_string_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_string_array);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_string_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_string_range);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_string_contig_range);
 
@@ -834,12 +896,14 @@ ATF_INIT_TEST_CASES(tcs)
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_nvlist_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_nvlist_array);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_nvlist_array);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_descriptor);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_descriptor);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_binary);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_binary);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_binary);
 	ATF_ADD_TEST_CASE(tcs, nvxx_take_binary);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_binary_range);
