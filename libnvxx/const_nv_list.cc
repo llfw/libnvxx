@@ -116,6 +116,8 @@ __const_nv_list::operator bool() const noexcept
 void
 __const_nv_list::send(int fd) const
 {
+	__throw_if_error();
+
 	if (::nvlist_send(fd, __m_nv) == 0)
 		return;
 
