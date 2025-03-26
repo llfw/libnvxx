@@ -921,8 +921,7 @@ TEST_CASE(nvxx_add_binary_error)
 
 	auto nvl = bsd::nv_list();
 	nvl.set_error(EINVAL);
-	ATF_REQUIRE_THROW(bsd::nv_error_state,
-			  nvl.add_binary("test_binary", value));
+	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_binary(key, value));
 }
 
 TEST_CASE(nvxx_add_duplicate_binary)

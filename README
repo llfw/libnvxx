@@ -60,7 +60,9 @@ serialization interface:
 
 	object obj{};
 	nv_list nvl = bsd::nv_serialize(obj);
-	object obj2 = bsd::nv_deserialize<object>(nvl);
+
+	object obj2{};
+	bsd::nv_deserialize(nvl, obj);
 
 infrequently asked questions:
 

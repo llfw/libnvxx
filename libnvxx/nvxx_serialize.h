@@ -365,15 +365,13 @@ auto nv_serialize(_T &&__o) -> nv_list
 	return __nvl;
 }
 
-template<typename _T>
-auto nv_deserialize(const_nv_list const &__nvl) -> _T
+template<typename _Object>
+void nv_deserialize(const_nv_list const &__nvl, _Object &__obj)
 {
-	using __schema_type = nv_schema<std::remove_cvref_t<_T>>;
+	using __schema_type = nv_schema<std::remove_cvref_t<_Object>>;
 	auto __schema = __schema_type{}.get();
 
-	auto __obj = _T();
 	__schema.deserialize(__nvl, __obj);
-	return __obj;
 }
 
 } // namespace bsd

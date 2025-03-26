@@ -216,7 +216,8 @@ TEST_CASE(nv_serialize)
 	auto obj = object{42, "quux", {42, 666, 1024}};
 	auto nvl = bsd::nv_serialize(obj);
 
-	auto obj2 = bsd::nv_deserialize<object>(nvl);
+	auto obj2 = object{};
+	bsd::nv_deserialize(nvl, obj2);
 	ATF_REQUIRE_EQ(42, obj2.int_value);
 	ATF_REQUIRE_EQ("quux", obj2.string_value);
 	ATF_REQUIRE_EQ(true, std::ranges::equal(obj2.array_value,
