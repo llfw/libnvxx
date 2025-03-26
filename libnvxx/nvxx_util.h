@@ -20,27 +20,33 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef	_NVXX_H_INCLUDED
-#define _NVXX_H_INCLUDED
+#ifndef	_NVXX_UTIL_H_INCLUDED
+#define _NVXX_UTIL_H_INCLUDED
 
-/*
- * nvl: lightweight wrapper around nv(9).
- */
+#ifndef _NVXX_H_INCLUDED
+# error include <nvxx.h> instead of including this header directly
+#endif
 
-#include <sys/nv.h>
-#include <sys/cnv.h>
+// Some useful helper types.
 
-#include <expected>
-#include <ranges>
-#include <span>
-#include <system_error>
-#include <vector>
-#include <stdexcept>
-#include <format>
+namespace bsd::__detail {
 
-#include "nvxx_util.h"
-#include "nvxx_base.h"
-#include "nvxx_iterator.h"
-#include "nvxx_serialize.h"
+template<typename T>
+struct ptr_guard {
+	ptr_guard(T *ptr_) : ptr(ptr_) {}
 
-#endif	/* !_NVXX_H_INCLUDED */
+	~ptr_guard() {
+		std::free(ptr);
+	}
+
+	T *ptr;
+};
+
+template<typename T>
+auto construct = std::views::transform([] (auto &&value) {
+	return T(std::forward<decltype(value)>(value));
+});
+
+} // namespace bsd::__detail
+
+#endif	/* !_NVXX_UTIL_H_INCLUDED */

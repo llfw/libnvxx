@@ -27,14 +27,6 @@
 # error include <nvxx.h> instead of including this header directly
 #endif
 
-#include <expected>
-#include <ranges>
-#include <span>
-#include <system_error>
-#include <vector>
-#include <stdexcept>
-#include <format>
-
 namespace bsd {
 
 struct nv_list;
