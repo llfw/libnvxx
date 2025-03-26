@@ -24,6 +24,8 @@ to use the library:
 #include <nvxx.h> and link with -lnvxx.  if you link statically, you also need
 to link with -lnv.
 
+for complete documentation, read the nvxx(3) manual page.
+
 the basic API is very similar to the C libnv API:
 
 	auto nvl = bsd::nv_list();
