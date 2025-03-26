@@ -115,6 +115,15 @@ nv_list::nv_list(::nvlist_t *nvl) noexcept
 {
 }
 
+nv_list::nv_list(const_nv_list const &other)
+	: __nv_list_base(::nvlist_clone(other.ptr()),
+			 __detail::__nvlist_owning::__owning)
+{
+	if (__m_nv == nullptr)
+		throw std::system_error(
+			std::error_code(errno, std::system_category()));
+}
+
 nv_list::nv_list(nv_list const &other)
 	: __nv_list_base(::nvlist_clone(other.__m_nv),
 			 __detail::__nvlist_owning::__owning)

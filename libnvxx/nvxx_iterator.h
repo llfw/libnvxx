@@ -23,6 +23,10 @@
 #ifndef _NVXX_ITERATOR_H_INCLUDED
 #define _NVXX_ITERATOR_H_INCLUDED
 
+#ifndef _NVXX_H_INCLUDED
+# error include <nvxx.h> instead of including this header directly
+#endif
+
 #include <variant>
 #include <iterator>
 #include <concepts>

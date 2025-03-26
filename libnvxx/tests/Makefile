@@ -20,7 +20,7 @@
 
 PREFIX?=	/usr/local
 TESTSDIR?=	${PREFIX}/tests/nvxx
-ATF_TESTS_CXX=	nvxx_basic nvxx_iterator
+ATF_TESTS_CXX=	nvxx_basic nvxx_iterator nvxx_serialize
 CXXSTD=		c++23
 # Note that we can't use -Werror here because it breaks ATF.
 CXXFLAGS+=	-W -Wall -Wextra

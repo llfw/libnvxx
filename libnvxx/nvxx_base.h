@@ -23,7 +23,9 @@
 #ifndef	_NVXX_BASE_H_INCLUDED
 #define _NVXX_BASE_H_INCLUDED
 
-#include <sys/nv.h>
+#ifndef _NVXX_H_INCLUDED
+# error include <nvxx.h> instead of including this header directly
+#endif
 
 #include <expected>
 #include <ranges>
@@ -482,6 +484,12 @@ struct nv_list final
 	 * Create an nv_list object that refers to an existing nvlist_t.
 	 */
 	explicit nv_list(::nvlist_t *) noexcept;
+
+	/*
+	 * Create an nv_list object by copying an existing const_nv_list object
+	 * with nvlist_clone().  On failure, throws std::system_error.
+	 */
+	explicit nv_list(const_nv_list const &);
 
 	/*
 	 * Create an nv_list by copying an existing nv_list object with
