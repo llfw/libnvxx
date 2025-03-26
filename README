@@ -34,6 +34,28 @@ iterator interface:
 		// do something with value...
 	}
 
+serialization interface:
+
+	struct object {
+		std::uint64_t int_value{};
+		std::string string_value{};
+		std::vector<std::uint64_t> array_value;
+	};
+
+	template<> struct bsd::nv_schema<object> {
+		auto get() {
+			return	bsd::nv_field("int value", &object::int_value)
+				>> bsd::nv_field("string value", &object::string_value)
+				>> bsd::nv_field("array value", &object::array_value);
+		}
+	};
+
+	// ...
+
+	object obj{};
+	nv_list nvl = bsd::nv_serialize(obj);
+	object obj2 = bsd::nv_deserialize<object>(nvl);
+
 infrequently asked questions:
 
 Q: what version of FreeBSD does libnvxx require?
