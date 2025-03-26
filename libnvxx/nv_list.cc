@@ -182,6 +182,8 @@ __nv_list::free(std::string_view key)
 void
 __nv_list::add_null(std::string_view key)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_null(__m_nv, skey.c_str());
@@ -212,6 +214,8 @@ __nv_list::free_null(std::string_view key)
 void
 __nv_list::add_bool(std::string_view key, bool value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_bool(__m_nv, skey.c_str(), value);
@@ -260,6 +264,8 @@ void
 __nv_list::add_bool_array(std::string_view key,
 			  std::span<bool const> value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_bool_array(__m_nv, skey.c_str(),
@@ -306,6 +312,8 @@ __nv_list::free_bool_array(std::string_view key)
 void
 __nv_list::add_number(std::string_view key, std::uint64_t value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_number(__m_nv, skey.c_str(), value);
@@ -355,6 +363,8 @@ void
 __nv_list::add_number_array(std::string_view key,
 			    std::span<std::uint64_t const> value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_number_array(__m_nv, skey.c_str(),
@@ -402,6 +412,8 @@ __nv_list::free_number_array(std::string_view key)
 void
 __nv_list::add_string(std::string_view key, std::string_view value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_string(__m_nv, skey.c_str(), std::string(value).c_str());
@@ -446,6 +458,8 @@ void
 __nv_list::add_string_array(std::string_view key,
 			    std::span<std::string_view const> value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	// nvlist_add_string_array expects an array of NUL-terminated
@@ -516,6 +530,8 @@ __nv_list::free_string_array(std::string_view key)
 void
 __nv_list::add_nvlist(std::string_view key, const_nv_list const &other)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_nvlist(__m_nv, skey.c_str(), other.__m_nv);
@@ -568,6 +584,8 @@ void
 __nv_list::add_nvlist_array(std::string_view key,
 			    std::span<const_nv_list const> value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	auto ptrs = value
@@ -594,6 +612,8 @@ void
 __nv_list::add_nvlist_array(std::string_view key,
 			    std::span<nv_list const> value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	auto ptrs = value
@@ -664,6 +684,8 @@ __nv_list::take_descriptor(std::string_view key)
 void
 __nv_list::add_descriptor(std::string_view key, int value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_descriptor(__m_nv, skey.c_str(), value);
@@ -705,6 +727,8 @@ void
 __nv_list::add_descriptor_array(std::string_view key,
 				std::span<int const> value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_descriptor_array(__m_nv, skey.c_str(),
@@ -756,6 +780,8 @@ __nv_list::take_descriptor_array(std::string_view key)
 void
 __nv_list::add_binary(std::string_view key, std::span<std::byte const> value)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	::nvlist_add_binary(__m_nv, skey.c_str(),

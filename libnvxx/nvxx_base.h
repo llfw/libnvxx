@@ -109,7 +109,7 @@ protected:
 	~__nv_list_base();
 	void __free_nv() noexcept;
 
-	void __throw_if_error();
+	void __throw_if_error() const;
 
 	::nvlist_t *__m_nv{};
 	__nvlist_owning __m_owning;

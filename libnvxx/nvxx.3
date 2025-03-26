@@ -439,6 +439,9 @@ If a value of the given name is already present in the nvlist, and the nvlist
 does not permit duplicate value names, then an exception of type
 .Vt nv_key_exists
 is thrown, and the nvlist is placed in the error state.
+If the nvlist is in an error state, then an exception of type
+.Vt nv_error_state
+is thrown, and the key is not added.
 .Pp
 The
 .Fn add_descriptor

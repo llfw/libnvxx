@@ -63,14 +63,11 @@ __nv_list_base::__free_nv() noexcept
 }
 
 void
-__nv_list_base::__throw_if_error()
+__nv_list_base::__throw_if_error() const
 {
-	auto err = ::nvlist_error(__m_nv);
-
-	if (err == 0)
-		return;
-
-	throw nv_error_state(std::error_code(err, std::generic_category()));
+	if (auto err = ::nvlist_error(__m_nv); err != 0)
+		throw nv_error_state(std::error_code(err,
+						     std::generic_category()));
 }
 
 } // namespace bsd::__detail
