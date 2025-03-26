@@ -493,7 +493,7 @@ The
 .Fn move_string_array ,
 .Fn move_nvlist_array
 and
-.Fn move_desctiptor_array
+.Fn move_descriptor_array
 member functions take ownership of the provided C array of the given type
 and add it to the nvlist as an array.
 The array must be a C array which was previously allocated using
@@ -508,7 +508,7 @@ the nvlist takes ownership of the member values and will later free them using
 .Xr nvlist_destroy 3
 (for nvlists).
 In the case of
-.Fn move_desctiptor_array ,
+.Fn move_descriptor_array ,
 the nvlist takes ownership of the member descriptors and will later close them
 using
 .Xr close 2 .
