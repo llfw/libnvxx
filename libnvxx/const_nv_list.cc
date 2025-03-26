@@ -334,7 +334,12 @@ __const_nv_list::get_nvlist_array(std::string_view key) const
 int
 __const_nv_list::get_descriptor(std::string_view key) const
 {
-	return ::nvlist_get_descriptor(__m_nv, std::string(key).c_str());
+	auto skey = std::string(key);
+
+	if (!::nvlist_exists_descriptor(__m_nv, skey.c_str()))
+		throw nv_key_not_found(skey);
+
+	return ::nvlist_get_descriptor(__m_nv, skey.c_str());
 }
 
 std::span<int const>

@@ -900,6 +900,7 @@ ATF_INIT_TEST_CASES(tcs)
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_descriptor);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_descriptor);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_descriptor);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_binary);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_binary);
