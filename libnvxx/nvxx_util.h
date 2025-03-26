@@ -31,15 +31,15 @@
 
 namespace bsd::__detail {
 
-template<typename T>
-struct ptr_guard {
-	ptr_guard(T *ptr_) : ptr(ptr_) {}
+template<typename _T>
+struct __ptr_guard {
+	__ptr_guard(_T *__ptr_) : __ptr(__ptr_) {}
 
-	~ptr_guard() {
-		std::free(ptr);
+	~__ptr_guard() {
+		std::free(__ptr);
 	}
 
-	T *ptr;
+	_T *__ptr;
 };
 
 template<typename T>

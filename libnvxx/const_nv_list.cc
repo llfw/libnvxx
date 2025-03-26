@@ -148,8 +148,8 @@ __const_nv_list::pack() const
 	auto size = std::size_t{};
 
 	if (auto *data = nvlist_pack(__m_nv, &size); data != nullptr) {
-		auto bytes = ptr_guard(static_cast<std::byte *>(data));
-		return {bytes.ptr, bytes.ptr + size};
+		auto bytes = __ptr_guard(static_cast<std::byte *>(data));
+		return {bytes.__ptr, bytes.__ptr + size};
 	}
 
 	throw std::system_error(error());

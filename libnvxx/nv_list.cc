@@ -254,10 +254,9 @@ std::vector<bool>
 __nv_list::take_bool_array(std::string_view key)
 {
 	auto nitems = std::size_t{};
-	auto ptr = ptr_guard(::nvlist_take_bool_array(__m_nv,
-						      std::string(key).c_str(),
-						      &nitems));
-	return std::vector<bool>(ptr.ptr, ptr.ptr + nitems);
+	auto ptr = __ptr_guard(::nvlist_take_bool_array(
+			__m_nv, std::string(key).c_str(), &nitems));
+	return std::vector<bool>(ptr.__ptr, ptr.__ptr + nitems);
 }
 
 void
@@ -352,11 +351,11 @@ std::vector<std::uint64_t>
 __nv_list::take_number_array(std::string_view key)
 {
 	auto nitems = std::size_t{};
-	auto ptr = ptr_guard(
+	auto ptr = __ptr_guard(
 		::nvlist_take_number_array(__m_nv,
 					   std::string(key).c_str(),
 					   &nitems));
-	return {ptr.ptr, ptr.ptr + nitems};
+	return {ptr.__ptr, ptr.__ptr + nitems};
 }
 
 void
@@ -657,12 +656,12 @@ std::vector<nv_list>
 __nv_list::take_nvlist_array(std::string_view key)
 {
 	auto nitems = std::size_t{};
-	auto ptr = ptr_guard(
+	auto ptr = __ptr_guard(
 		::nvlist_take_nvlist_array(__m_nv,
 					   std::string(key).c_str(),
 					   &nitems));
 	return {std::from_range,
-		std::span(ptr.ptr, nitems) | construct<nv_list>()};
+		std::span(ptr.__ptr, nitems) | construct<nv_list>()};
 }
 
 void
@@ -766,11 +765,11 @@ std::vector<int>
 __nv_list::take_descriptor_array(std::string_view key)
 {
 	auto nitems = std::size_t{};
-	auto ptr = ptr_guard(
+	auto ptr = __ptr_guard(
 		::nvlist_take_descriptor_array(__m_nv,
 					       std::string(key).c_str(),
 					       &nitems));
-	return {ptr.ptr, ptr.ptr + nitems};
+	return {ptr.__ptr, ptr.__ptr + nitems};
 }
 
 /*
@@ -825,8 +824,8 @@ __nv_list::take_binary(std::string_view key)
 
 	auto size = std::size_t{};
 	auto *data = ::nvlist_take_binary(__m_nv, skey.c_str(), &size);
-	auto ptr = ptr_guard(static_cast<std::byte *>(data));
-	return {ptr.ptr, ptr.ptr + size};
+	auto ptr = __ptr_guard(static_cast<std::byte *>(data));
+	return {ptr.__ptr, ptr.__ptr + size};
 }
 
 } // namespace bsd
