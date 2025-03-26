@@ -2,6 +2,10 @@ libnvxx is a lightweight C++ wrapper around FreeBSD's libnv.  it allows you to
 interoperate with C code that uses libnv, which is becoming fairly common on
 FreeBSD.
 
+NOTE: this library is for libnv, aka nv(9), which is the FreeBSD native version
+of the library.  it does not (at least currently) support libnvpair, which is
+the Solaris version of the library used by ZFS.
+
 priority is given to a clean and idiomatic C++ API for the library.  this means
 in some cases the API is less efficient than it could be; for example, it
 sometimes requires data copies which are, strictly speaking, not necessary. 
