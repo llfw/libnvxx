@@ -33,6 +33,25 @@
 namespace bsd {
 
 // exposition only
+struct nv_error : std::runtime_error {
+};
+
+// exposition only
+struct nv_error_state : nv_error {
+	std::error_code error;
+};
+
+// exposition only
+struct nv_key_not_found : nv_error {
+	std::string key;
+};
+
+// exposition only
+struct nv_key_exists : nv_error {
+	std::string key;
+};
+
+// exposition only
 template<typename T>
 using container-type = ...;
 
@@ -203,6 +222,293 @@ The
 library provides a C++ wrapper around the
 .Xr nv 9
 C library.
-The library is ABI compatible with the C library, in the case that it can both
+The library is ABI compatible with the C library, in the sense that it can both
 consume and produce pointers of type
 .Vt nvlist_t .
+.Sh TYPES
+The library provides two basic types:
+.Vt nv_list ,
+which represents an owning, mutable
+.Vt nvlist_t * ,
+and
+.Vt const_nv_list ,
+which represents a non-owning, immutable
+.Vt const nvlist_t * .
+.Pp
+A
+.Vt const_nv_list
+provides all non-mutating operations on the nvlist, such as testing for the
+existence of a key, fetching a key, and packing or sending an nvlist.
+A
+.Vt const_nv_list
+can be constructed from an existing
+.Vt const nvlist_t * ,
+or from an
+.Vt nv_list ,
+or copy-constructed from another
+.Vt const_nv_list .
+Because
+.Vt const_nv_list
+is non-owning, it always refers to an existing nvlist and will never destroy
+the object to which it refers; this is the responsibility of the user.
+.Pp
+An
+.Vt nv_list
+provides all the operations that
+.Vt const_nv_list
+provides, plus additional mutating operations such as adding or removing keys.
+An
+.Vt nv_list
+can be constructed from an existing
+.Vt nvlist_t * ,
+in which case it will take ownership of the nvlist.
+It may also be copy-constructed from another
+.Vt nv_list
+or
+.Vt const_nv_list ,
+in which case it will duplicate the underlying list using
+.Xr nvlist_clone 3 ,
+and it may be default-constructed, in which case it will create a new nvlist
+using
+.Xr nvlist_create 3 .
+To pass flags to
+.Xr nvlist_create 3 ,
+use the optional
+.Fa "int flags"
+argument to the constructor.
+.Pp
+Both
+.Vt const_nv list
+and
+.Vt nv_list
+support copy-initialization and exception-free move-initialization.
+In addition,
+.Vt nv_list
+supports default-initialization.
+.Sh ERROR HANDLING
+The library defines a base error class called
+.Vt nv_error ,
+which is thrown when an error is detected.
+Several more specific derived exception types are defined:
+.Bl -tag -width indent
+.It Vt nv_error_state
+Thrown when attempting to perform an operation on an nvlist which is in the
+error state, such as adding or removing a key.
+This is also thrown when attempting to construct an
+.Vt nv_list
+or
+.Vt const_nv_list
+using an
+.Vt nvlist_t *
+which is in the error state.
+.It Vt nv_key_not_found
+Thrown when an attempt is made to fetch a key which does not exist in the
+nvlist.
+.It Vt nv_key_exists
+Thrown when an attempt is made to add a key to an nvlist when a key of the same
+name is already present, and the list does permit duplicates.
+.El
+.Sh CONST_NV_LIST OPERATIONS
+The 
+.Fn exists_null ,
+.Fn exists_bool ,
+.Fn exists_number ,
+.Fn exists_string ,
+.Fn exists_nvlist ,
+.Fn exists_binary ,
+.Fn exists_bool_array ,
+.Fn exists_number_array ,
+.Fn exists_string_array ,
+.Fn exists_nvlist_array
+and
+.Fn exists_descriptor_array 
+member functions return
+.Dv true
+if a key with the given name exists in the nvlist, or otherwise
+.Dv false .
+These functions may be called on an nvlist which is in the error state.
+.Pp
+The
+.Fn get_bool ,
+.Fn get_number ,
+.Fn get_string ,
+.Fn get_nvlist ,
+.Fn get_descriptor ,
+.Fn get_binary ,
+.Fn get_bool_array ,
+.Fn get_number_array ,
+.Fn get_string_array ,
+.Fn get_nvlist_array
+and
+.Fn get_descriptor_array
+member functions return the value of the key by the given name in the nvlist.
+If a key by that name does not exist, then an exception of type
+.Vt nv_key_not_found
+is thrown.
+For the array variants, the return type
+.Vt container-type<T>
+is defined to be an unspecified container type
+.Vt C
+which fulfills the requirements of
+.Vt std::ranges::continguous_range
+and where
+.Vt std::ranges::range_value_t<C>
+is equal to
+.Vt T .
+.Sh NV_LIST OPERATIONS
+The
+.Fn add_null ,
+.Fn add_bool ,
+.Fn add_number ,
+.Fn add_string  and
+.Fn add_nvlist
+and
+.Fn add_binary
+member functions add a new key to the nvlist of the appropriate type with the
+given name.
+If a value of the given name is already present in the nvlist, and the nvlist
+does not permit duplicate value names, then an exception of type
+.Vt nv_key_exists
+is thrown, and the nvlist is placed in the error state.
+.Pp
+The
+.Fn add_descriptor
+member function adds a new file descriptor to the nvlist with the given name.
+The file descriptor will be duplicated using
+.Xr dup 2
+prior to being added, and if later removed, will be closed using
+.Xr close 2 .
+The behaviour when attempting to add a duplicate value name is the same as
+described for the other
+.Fn add_
+member functions.
+.Pp
+The
+.Fn add_bool_array ,
+.Fn add_number_array ,
+.Fn add_string_array ,
+.Fn add_nvlist_array
+and
+.Fn add_descriptor_array
+functions add an array of that type to the nvlist.
+The array should be provided as an
+.Vt std::span<>
+of the appropriate type; the value type of the span may be
+.Vt const .
+The behaviour when attempting to add a duplicate value name is the same as
+described for the
+.Fn add_
+member functions.
+.Pp
+The
+.Fn add_bool_range ,
+.Fn add_number_range ,
+.Fn add_string_range ,
+.Fn add_nvlist_range
+and
+.Fn add_descriptor_range
+functions add an array of that type to the nvlist, where the contents of the
+array are provided as a type which fulfills the requirements of
+.Vt std::ranges::range .
+The value type of the range may be
+.Vt const .
+The behaviour when attempting to add a duplicate value name is the same as
+described for the
+.Fn add_
+member functions.
+.Pp
+The
+.Fn free_null ,
+.Fn free_bool ,
+.Fn free_number ,
+.Fn free_string ,
+.Fn free_nvlist ,
+.Fn free_descriptor ,
+.Fn free_binary ,
+.Fn free_bool_array ,
+.Fn free_number_array ,
+.Fn free_string_array ,
+.Fn free_nvlist_array
+and
+.Fn free_descriptor_array
+member functions remove the first value of the given name of the appropriate
+type from the nvlist.
+If no suitable value is found to remove, an exception of type
+.Vt nv_key_not_found
+is thrown.
+.Pp
+The
+.Fn take_null ,
+.Fn take_bool ,
+.Fn take_number ,
+.Fn take_string ,
+.Fn take_nvlist ,
+.Fn take_descriptor ,
+.Fn take_binary ,
+.Fn take_bool_array ,
+.Fn take_number_array ,
+.Fn take_string_array ,
+.Fn take_nvlist_array
+and
+.Fn take_descriptor_array
+member functions remove the first value of the given name of the appropriate
+type from the nvlist, and return the value which was removed.
+If no suitable value is found to remove, an exception of type
+.Vt nv_key_not_found
+is thrown.
+.Pp
+The
+.Fn move_string
+member function takes ownership of the provided string pointer, which must be a
+NUL-terminated C string allocated using
+.Fn std::malloc ,
+and adds it to the nvlist.
+The string will later be freed using
+.Fn std::free .
+The behaviour when attempting to add a duplicate value name is the same as
+described for the
+.Fn add_
+member functions.
+.Pp
+The
+.Fn move_nvlist
+member function takes ownership of the provided nvlist and adds it to the
+nvlist.
+The behaviour when attempting to add a duplicate value name is the same as
+described for the
+.Fn add_
+member functions.
+.Pp
+The
+.Fn move_descriptor
+member function takes ownership of the provided file descriptor and adds it to
+the nvlist.
+This equivalent to calling
+.Fn add_descriptor ,
+except that the file descriptor is not duplicated.
+.Pp
+The
+.Fn move_bool_array ,
+.Fn move_number_array ,
+.Fn move_string_array ,
+.Fn move_nvlist_array
+and
+.Fn move_desctiptor_array
+member functions take ownership of the provided C array of the given type
+and add it to the nvlist as an array.
+The array must be a C array which was previously allocated using
+.Fn std::malloc .
+In the case of
+.Fn move_string_array
+and
+.Fn move_nvlist_array ,
+the nvlist takes ownership of the member values and will later free them using
+.Fn std::free
+(for strings) or
+.Xr nvlist_destroy 3
+(for nvlists).
+In the case of
+.Fn move_desctiptor_array ,
+the nvlist takes ownership of the member descriptors and will later close them
+using
+.Xr close 2 .
