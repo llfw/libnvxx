@@ -32,6 +32,9 @@ namespace bsd {
 struct nv_list;
 struct const_nv_list;
 
+/*
+ * Generic base error type.
+ */
 struct nv_error : std::runtime_error {
 	template<typename... _Args>
 	nv_error(std::format_string<_Args...> __fmt, _Args && ...__args)
@@ -41,6 +44,25 @@ struct nv_error : std::runtime_error {
 	}
 };
 
+/*
+ * An operation was attempted on an nv_list whose underlying nvlist_t is in an
+ * error state.  This is a logic error since such operations are documented as
+ * not being possible.
+ */
+struct nv_error_state : nv_error {
+	nv_error_state(std::error_code __error)
+		: nv_error("operation attempted on an "
+			   "nvlist_t in an error state")
+		, error(__error)
+	{
+	}
+
+	std::error_code error;
+};
+
+/*
+ * A get-like function did not find the requested key.
+ */
 struct nv_key_not_found : nv_error {
 	std::string key;
 
@@ -51,6 +73,9 @@ struct nv_key_not_found : nv_error {
 	}
 };
 
+/*
+ * An add-like function found a duplicate key.
+ */
 struct nv_key_exists : nv_error {
 	std::string key;
 
@@ -83,6 +108,8 @@ protected:
 
 	~__nv_list_base();
 	void __free_nv() noexcept;
+
+	void __throw_if_error();
 
 	::nvlist_t *__m_nv{};
 	__nvlist_owning __m_owning;
@@ -502,7 +529,7 @@ struct const_nv_list final
 	 * destruction.  If the nvlist_t is null, the const_nv_list will be
 	 * empty.
 	 */
-	explicit const_nv_list(::nvlist_t const *) noexcept;
+	explicit const_nv_list(::nvlist_t const *);
 
 	/*
 	 * Copy the nvlist pointer from an existing const_nv_list.  This does
@@ -547,7 +574,7 @@ struct nv_list final
 	/*
 	 * Create an nv_list object that refers to an existing nvlist_t.
 	 */
-	explicit nv_list(::nvlist_t *) noexcept;
+	explicit nv_list(::nvlist_t *);
 
 	/*
 	 * Create an nv_list object by copying an existing const_nv_list object

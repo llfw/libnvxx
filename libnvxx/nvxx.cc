@@ -37,14 +37,16 @@ __nv_list_base::__nv_list_base(int flags)
 {
 	if (__m_nv == nullptr)
 		throw std::system_error(
-			std::error_code(errno, std::system_category()));
+			std::error_code(errno, std::generic_category()));
 }
 
 __nv_list_base::__nv_list_base(nvlist_t *nv, __nvlist_owning owning)
 	: __m_nv(nv)
-	, __m_owning(owning)
+	, __m_owning(__nvlist_owning::__non_owning)
 {
 	assert(nv);
+	__throw_if_error();
+	__m_owning = owning;
 }
 
 __nv_list_base::~__nv_list_base()
@@ -58,6 +60,17 @@ __nv_list_base::__free_nv() noexcept
 	if ((__m_nv != nullptr) &&
 	    (__m_owning == __nvlist_owning::__owning))
 		::nvlist_destroy(__m_nv);
+}
+
+void
+__nv_list_base::__throw_if_error()
+{
+	auto err = ::nvlist_error(__m_nv);
+
+	if (err == 0)
+		return;
+
+	throw nv_error_state(std::error_code(err, std::generic_category()));
 }
 
 } // namespace bsd::__detail

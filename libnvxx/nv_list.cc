@@ -39,7 +39,7 @@ nv_list::nv_list(int flags)
 			std::error_code(errno, std::system_category()));
 }
 
-nv_list::nv_list(::nvlist_t *nvl) noexcept
+nv_list::nv_list(::nvlist_t *nvl)
 	: __nv_list_base(nvl, __detail::__nvlist_owning::__owning)
 {
 }
