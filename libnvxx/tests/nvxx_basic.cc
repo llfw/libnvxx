@@ -66,10 +66,40 @@ TEST_CASE(nvxx_ignore_case)
 
 TEST_CASE(nvxx_add_null)
 {
+	using namespace std::literals;
+	auto constexpr key = "test_null"sv;
+
 	auto nvl = bsd::nv_list();
-	nvl.add_null("test");
-	ATF_REQUIRE_EQ(true, nvl.exists_null("test"));
-	ATF_REQUIRE_EQ(true, nvl.exists("test"));
+	nvl.add_null(key);
+	ATF_REQUIRE_EQ(true, nvl.exists_null(key));
+	ATF_REQUIRE_EQ(true, nvl.exists(key));
+}
+
+TEST_CASE(nvxx_add_duplicate_null)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_null"sv;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_null(key);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_null\" already exists",
+			     nvl.add_null(key));
+}
+
+TEST_CASE(nvxx_free_null)
+{
+	using namespace std::literals;
+	auto constexpr key = "test null"sv;
+
+	auto nvl = bsd::nv_list();
+
+	nvl.add_null(key);
+	ATF_REQUIRE_EQ(true, nvl.exists_null(key));
+
+	nvl.free_null(key);
+	ATF_REQUIRE_EQ(false, nvl.exists_null(key));
 }
 
 /*
@@ -90,6 +120,29 @@ TEST_CASE(nvxx_add_bool)
 	ATF_REQUIRE_EQ(value, nvl.get_bool(key));
 }
 
+TEST_CASE(nvxx_add_duplicate_bool)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_bool"sv;
+	auto constexpr value = true;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_bool(key, value);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_bool\" already exists",
+			     nvl.add_bool(key, value));
+}
+
+TEST_CASE(nvxx_get_nonexistent_bool)
+{
+	auto nvl = bsd::nv_list();
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_bool("nonesuch"));
+}
+
 TEST_CASE(nvxx_take_bool)
 {
 	using namespace std::literals;
@@ -100,7 +153,10 @@ TEST_CASE(nvxx_take_bool)
 	nvl.add_bool(key, value);
 	auto b = nvl.take_bool(key);
 	ATF_REQUIRE_EQ(value, b);
-	ATF_REQUIRE_EQ(false, nvl.exists(key));
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"test_bool\" not found",
+			     (void)nvl.take_bool(key));
 }
 
 TEST_CASE(nvxx_free_bool)
@@ -138,6 +194,21 @@ TEST_CASE(nvxx_add_bool_array)
 	ATF_REQUIRE_EQ(true, data3[0]);
 	ATF_REQUIRE_EQ(false, data3[1]);
 	ATF_REQUIRE_EQ(false, nvl.exists(key));
+}
+
+TEST_CASE(nvxx_add_duplicate_bool_array)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_bool"sv;
+	auto data = std::array<bool, 2>{true, false};
+	auto value = std::span(data);
+
+	auto nvl = bsd::nv_list();
+	nvl.add_bool_array(key, value);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_bool\" already exists",
+			     nvl.add_bool_array(key, value));
 }
 
 TEST_CASE(nvxx_add_bool_range)
@@ -201,6 +272,28 @@ TEST_CASE(nvxx_add_number)
 	ATF_REQUIRE_EQ(value, nvl.get_number(key));
 }
 
+TEST_CASE(nvxx_add_duplicate_number)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_number"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_number\" already exists",
+			     nvl.add_number(key, value));
+}
+
+TEST_CASE(nvxx_get_nonexistent_number)
+{
+	auto nvl = bsd::nv_list();
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_number("nonesuch"));
+}
+
 TEST_CASE(nvxx_take_number)
 {
 	using namespace std::literals;
@@ -212,7 +305,10 @@ TEST_CASE(nvxx_take_number)
 	nvl.add_number(key, value);
 	auto n = nvl.take_number(key);
 	ATF_REQUIRE_EQ(value, n);
-	ATF_REQUIRE_EQ(false, nvl.exists(key));
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"test_number\" not found",
+			     (void)nvl.take_number(key));
 }
 
 TEST_CASE(nvxx_free_number)
@@ -249,6 +345,20 @@ TEST_CASE(nvxx_add_number_array)
 	auto data3 = nvl.take_number_array(key);
 	ATF_REQUIRE_EQ(true, std::ranges::equal(data, data3));
 	ATF_REQUIRE_EQ(false, nvl.exists(key));
+}
+
+TEST_CASE(nvxx_add_duplicate_number_array)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_number"sv;
+	auto value = std::vector{42_u64, 1024_u64};
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number_range(key, value);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_number\" already exists",
+			     nvl.add_number_range(key, value));
 }
 
 TEST_CASE(nvxx_add_number_range)
@@ -307,6 +417,28 @@ TEST_CASE(nvxx_add_string)
 	ATF_REQUIRE_EQ(value, nvl.get_string(key));
 }
 
+TEST_CASE(nvxx_add_duplicate_string)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_string"sv;
+	auto constexpr value = "testing value"sv;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_string(key, value);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_string\" already exists",
+			     nvl.add_string(key, value));
+}
+
+TEST_CASE(nvxx_get_nonexistent_string)
+{
+	auto nvl = bsd::nv_list();
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_string("nonesuch"));
+}
+
 TEST_CASE(nvxx_take_string)
 {
 	using namespace std::literals;
@@ -317,7 +449,10 @@ TEST_CASE(nvxx_take_string)
 	nvl.add_string(key, value);
 	auto s = nvl.take_string(key);
 	ATF_REQUIRE_EQ(value, s);
-	ATF_REQUIRE_EQ(false, nvl.exists(key));
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"test_string\" not found",
+			     (void)nvl.take_string(key));
 }
 
 TEST_CASE(nvxx_free_string)
@@ -351,6 +486,20 @@ TEST_CASE(nvxx_add_string_array)
 	auto data3 = nvl.take_string_array(key);
 	ATF_REQUIRE_EQ(true, std::ranges::equal(data, data3));
 	ATF_REQUIRE_EQ(false, nvl.exists(key));
+}
+
+TEST_CASE(nvxx_add_duplicate_string_array)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_string"sv;
+	auto value = std::vector{"one"sv, "two"sv, "three"sv};
+
+	auto nvl = bsd::nv_list();
+	nvl.add_string_range(key, value);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_string\" already exists",
+			     nvl.add_string_range(key, value));
 }
 
 TEST_CASE(nvxx_add_string_range)
@@ -412,16 +561,43 @@ TEST_CASE(nvxx_add_nvlist)
 		       		.get_number("test_number"));
 }
 
+TEST_CASE(nvxx_add_duplicate_nvlist)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_nvlist"sv;
+	auto value = bsd::nv_list{};
+
+	auto nvl = bsd::nv_list{};
+	nvl.add_nvlist(key, value);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_nvlist\" already exists",
+			     nvl.add_nvlist(key, value));
+}
+
+TEST_CASE(nvxx_get_nonexistent_nvlist)
+{
+	auto nvl = bsd::nv_list();
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"nonesuch\" not found",
+			     (void)nvl.get_nvlist("nonesuch"));
+}
+
 TEST_CASE(nvxx_take_nvlist)
 {
+	using namespace std::literals;
+	auto constexpr key = "test_nvlist"sv;
 	auto nvl = bsd::nv_list(), nvl2 = bsd::nv_list();
 
 	nvl2.add_number("test_number", 42);
-	nvl.add_nvlist("test_nvlist", nvl2);
+	nvl.add_nvlist(key, nvl2);
 
-	auto nvl3 = nvl.take_nvlist("test_nvlist");
-	ATF_REQUIRE_EQ(false, nvl.exists("test_nvlist"));
+	auto nvl3 = nvl.take_nvlist(key);
 	ATF_REQUIRE_EQ(42, nvl3.get_number("test_number"));
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"test_nvlist\" not found",
+			     (void)nvl.take_nvlist(key));
 }
 
 TEST_CASE(nvxx_free_nvlist)
@@ -469,9 +645,23 @@ TEST_CASE(nvxx_add_nvlist_array)
 	ATF_REQUIRE_EQ(n2, 2);
 }
 
+TEST_CASE(nvxx_add_duplicate_nvlist_array)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_nvlist"sv;
+	auto value = std::vector<bsd::nv_list>(2);
+
+	auto nvl = bsd::nv_list();
+	nvl.add_nvlist_range(key, value);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_nvlist\" already exists",
+			     nvl.add_nvlist_range(key, value));
+}
+
 TEST_CASE(nvxx_add_descriptor)
 {
-	int fds[2] = {};
+	auto fds = std::array<int, 2>{};
 	auto ret = ::pipe(&fds[0]);
 	ATF_REQUIRE_EQ(0, ret);
 
@@ -479,7 +669,7 @@ TEST_CASE(nvxx_add_descriptor)
 		decltype([](auto fds) {
 			::close(fds[0]);
 			::close(fds[1]); 
-		})>(fds);
+		})>(&fds[0]);
 
 	auto nvl = bsd::nv_list();
 	nvl.add_descriptor("test_descriptor", fds[0]);
@@ -500,6 +690,33 @@ TEST_CASE(nvxx_add_descriptor)
 	ATF_REQUIRE_EQ('4', buf[3]);
 }
 
+TEST_CASE(nvxx_add_duplicate_descriptor)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_descriptor"sv;
+
+	auto fds = std::array<int, 2>{};
+	auto ret = ::pipe(&fds[0]);
+	ATF_REQUIRE_EQ(0, ret);
+
+	auto guard = std::unique_ptr<int[],
+		decltype([](auto fds) {
+			::close(fds[0]);
+			::close(fds[1]); 
+		})>(&fds[0]);
+
+	auto nvl = bsd::nv_list{};
+	nvl.add_descriptor(key, fds[0]);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_descriptor\" already exists",
+			     nvl.add_descriptor(key, fds[0]));
+}
+
+/*
+ * binary
+ */
+
 TEST_CASE(nvxx_add_binary)
 {
 	auto nvl = bsd::nv_list();
@@ -514,6 +731,41 @@ TEST_CASE(nvxx_add_binary)
 	ATF_REQUIRE_EQ(true, nvl.exists_binary("test_binary"));
 	auto data2 = nvl.get_binary("test_binary");
 	ATF_REQUIRE_EQ(true, std::ranges::equal(data, data2));
+}
+
+TEST_CASE(nvxx_add_duplicate_binary)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_binary"sv;
+	auto constexpr value = std::array<std::byte, 16>{};
+
+	auto nvl = bsd::nv_list();
+	nvl.add_binary(key, value);
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_exists,
+			     "key \"test_binary\" already exists",
+			     nvl.add_binary(key, value));
+}
+
+TEST_CASE(nvxx_take_binary)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_binary"sv;
+	auto nvl = bsd::nv_list();
+
+	auto data = std::array<std::byte, 16>{};
+
+	for (auto i = 0u; i < data.size(); ++i)
+		data[i] = static_cast<std::byte>(i);
+
+	nvl.add_binary(key, std::span(data));
+
+	auto data2 = nvl.take_binary(key);
+	ATF_REQUIRE_EQ(true, std::ranges::equal(data, data2));
+
+	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
+			     "key \"test_binary\" not found",
+			     (void)nvl.take_binary(key));
 }
 
 TEST_CASE(nvxx_add_binary_range)
@@ -538,34 +790,57 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_ignore_case);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_null);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_null);
+	ATF_ADD_TEST_CASE(tcs, nvxx_free_null);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_bool);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_bool);
 	ATF_ADD_TEST_CASE(tcs, nvxx_take_bool);
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_bool);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_array);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_bool_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_range);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_contig_range);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_number);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_number);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_number);
 	ATF_ADD_TEST_CASE(tcs, nvxx_take_number);
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_number);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_number_array);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_number_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_number_range);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_number_contig_range);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_string);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_string);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_string);
 	ATF_ADD_TEST_CASE(tcs, nvxx_take_string);
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_string);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_string_array);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_string_array);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_string_range);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_string_contig_range);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_nvlist);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_nvlist);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_nvlist);
 	ATF_ADD_TEST_CASE(tcs, nvxx_take_nvlist);
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_nvlist);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_nvlist_array);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_nvlist_array);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_descriptor);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_descriptor);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_binary);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_binary);
+	ATF_ADD_TEST_CASE(tcs, nvxx_take_binary);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_binary_range);
 }

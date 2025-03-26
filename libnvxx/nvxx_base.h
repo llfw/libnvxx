@@ -33,11 +33,41 @@
 #include <system_error>
 #include <vector>
 #include <stdexcept>
+#include <format>
 
 namespace bsd {
 
 struct nv_list;
 struct const_nv_list;
+
+struct nv_error : std::runtime_error {
+	template<typename... _Args>
+	nv_error(std::format_string<_Args...> __fmt, _Args && ...__args)
+		: runtime_error(std::format(__fmt,
+					    std::forward<_Args>(__args)...))
+	{
+	}
+};
+
+struct nv_key_not_found : nv_error {
+	std::string key;
+
+	nv_key_not_found(std::string __key)
+		: nv_error("key \"{0}\" not found", __key)
+		, key(__key)
+	{
+	}
+};
+
+struct nv_key_exists : nv_error {
+	std::string key;
+
+	nv_key_exists(std::string __key)
+		: nv_error("key \"{0}\" already exists", __key)
+		, key(__key)
+	{
+	}
+};
 
 namespace __detail {
 
@@ -412,6 +442,48 @@ struct __nv_list : virtual __nv_list_base {
 	{
 		auto __arr = std::vector(std::from_range, __value);
 		add_number_range(__key, __arr);
+	}
+
+	/* add_nvlist_range */
+
+	template<std::ranges::contiguous_range _Range>
+		requires std::is_same_v<nv_list,
+			std::remove_cvref_t<
+				std::ranges::range_value_t<_Range>>>
+	void add_nvlist_range(std::string_view __key, _Range &&__value)
+	{
+		add_nvlist_array(__key, std::span(__value));
+	}
+
+	template<std::ranges::range _Range>
+		requires (!std::ranges::contiguous_range<_Range>
+			&& std::is_same_v<nv_list,
+				std::remove_cvref_t<
+					std::ranges::range_value_t<_Range>>>)
+	void add_nvlist_range(std::string_view __key, _Range &&__value)
+	{
+		auto __arr = std::vector(std::from_range, __value);
+		add_nvlist_range(__key, __arr);
+	}
+
+	template<std::ranges::contiguous_range _Range>
+		requires std::is_same_v<const_nv_list,
+			std::remove_cvref_t<
+				std::ranges::range_value_t<_Range>>>
+	void add_nvlist_range(std::string_view __key, _Range &&__value)
+	{
+		add_nvlist_array(__key, std::span(__value));
+	}
+
+	template<std::ranges::range _Range>
+		requires (!std::ranges::contiguous_range<_Range>
+			&& std::is_same_v<const_nv_list,
+				std::remove_cvref_t<
+					std::ranges::range_value_t<_Range>>>)
+	void add_nvlist_range(std::string_view __key, _Range &&__value)
+	{
+		auto __arr = std::vector(std::from_range, __value);
+		add_nvlist_range(__key, __arr);
 	}
 };
 
