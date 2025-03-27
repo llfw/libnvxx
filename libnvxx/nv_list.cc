@@ -158,6 +158,19 @@ __nv_list::free(std::string_view key)
 	::nvlist_free(__m_nv, std::string(key).c_str());
 }
 
+void
+__nv_list::free_type(std::string_view key, int type)
+{
+	__throw_if_error();
+
+	auto skey = std::string(key);
+
+	if (!::nvlist_exists_type(__m_nv, skey.c_str(), type))
+		throw nv_key_not_found(skey);
+
+	::nvlist_free_type(__m_nv, skey.c_str(), type);
+}
+
 /*
  * null operations
  */

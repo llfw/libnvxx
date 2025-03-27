@@ -133,6 +133,8 @@ struct nv_list : <unspecified> {
 	void move_nvlist(std::string_view key, nv_list &&);
 	void move_nvlist(std::string_view key, ::nvlist_t *);
 
+	void free(std::string_view key);
+	void free_type(std::string_view key, int type);
 	void free_null(std::string_view key);
 	void free_bool(std::string_view key);
 	void free_number(std::string_view key);
@@ -479,6 +481,23 @@ The behaviour when attempting to add a duplicate value name is the same as
 described for the
 .Fn add_
 member functions.
+.Pp
+The
+.Fn free
+member function removes the first key of the given name.
+If no such key exists, an exception of type
+.Vt nv_key_not_found
+is thrown.
+.Pp
+The
+.Fn free_type
+member function removes the first key of the given name and type.
+The
+.Fa type
+arguments should be one of the type constants defined in <sys/nv.h>.
+If no such key exists, an exception of type
+.Vt nv_key_not_found
+is thrown.
 .Pp
 The
 .Fn free_null ,

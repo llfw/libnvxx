@@ -164,7 +164,8 @@ struct __const_nv_list : virtual __nv_list_base {
 	/*
 	 * If a key of the given type with the given name exists, return true.
 	 */
-	[[nodiscard]] bool exists_type(std::string_view __key, int type) const;
+	[[nodiscard]] bool exists_type(std::string_view __key,
+				       int __type) const;
 
 	// TODO: exists_type()
 
@@ -204,7 +205,6 @@ struct __const_nv_list : virtual __nv_list_base {
 
 	[[nodiscard]] auto
 	get_binary(std::string_view key) const -> std::span<std::byte const>;
-
 
 	[[nodiscard]] auto
 	get_bool_array(std::string_view __key) const -> std::span<bool const>;
@@ -267,7 +267,7 @@ struct __nv_list : virtual __nv_list_base {
 	/* free */
 
 	void free(std::string_view __key);
-	// TODO: free_type()
+	void free_type(std::string_view __key, int __type);
 	void free_null(std::string_view __key);
 	void free_bool(std::string_view __key);
 	void free_number(std::string_view __key);
