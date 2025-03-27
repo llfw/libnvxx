@@ -200,7 +200,7 @@ __nv_list::add_null(std::string_view key)
 void
 __nv_list::free_null(std::string_view key)
 {
-	::nvlist_free_null(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_NULL);
 }
 
 /*
