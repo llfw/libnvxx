@@ -372,21 +372,6 @@ private:
 
 } // namespace __detail
 
-#if 0
-template<typename _Object, typename _M1, typename _M2>
-auto operator>> (nv_field<_Object, _M1> const &__f1,
-		 nv_field<_Object, _M2> const &__f2)
-{
-	return (__detail::__field_sequence(__f1, __f2));
-}
-
-template<typename _Object, typename _M, typename __first, typename __second>
-auto operator>> (__detail::__field_sequence<__first, __second> const &__f1,
-		 nv_field<_Object, _M> const &__f2)
-{
-	return (__detail::__field_sequence(__f1, __f2));
-}
-#endif
 auto operator>> (__detail::__serializer auto const &__f1,
 		 __detail::__serializer auto const &__f2)
 {
