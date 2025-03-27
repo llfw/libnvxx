@@ -272,17 +272,6 @@ concept __serializer =
 	requires(_T __t) {
 		typename _T::__serializer_tag_t;
 	};
-#if 0
-	requires(_T __t) {
-		typename _T::__object_type_t;
-	}
-	&& requires(_T &__t, nv_list &__nvl,
-		    const_nv_list &__cnvl,
-		    typename _T::__object_type_t &__e) {
-	__t.serialize(__nvl, __e);
-	__t.deserialize(__cnvl, __e);
-};
-#endif
 
 } // namespace detail
 
@@ -309,6 +298,10 @@ private:
 	std::string __field_name;
 	_Member _Object::* __field_ptr;
 };
+
+template<typename _Object, typename _Member>
+nv_field(std::string_view, _Member _Object::*)
+	-> nv_field<std::decay_t<_Object>, _Member>;
 
 template<typename _Member>
 struct nv_literal;
@@ -377,10 +370,6 @@ auto operator>> (__detail::__serializer auto const &__f1,
 {
 	return (__detail::__field_sequence(__f1, __f2));
 }
-
-template<typename _Object, typename _Member>
-nv_field(std::string_view, _Member _Object::*)
-	-> nv_field<std::decay_t<_Object>, _Member>;
 
 template<typename _T>
 struct nv_schema;
