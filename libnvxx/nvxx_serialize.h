@@ -261,8 +261,33 @@ struct nv_decoder<std::optional<_T>> {
  * object (de)serialization
  */
 
+namespace __detail {
+
+struct __serializer_tag {
+	using __serializer_tag_t = int;
+};
+
+template<typename _T>
+concept __serializer =
+	requires(_T __t) {
+		typename _T::__serializer_tag_t;
+	};
+#if 0
+	requires(_T __t) {
+		typename _T::__object_type_t;
+	}
+	&& requires(_T &__t, nv_list &__nvl,
+		    const_nv_list &__cnvl,
+		    typename _T::__object_type_t &__e) {
+	__t.serialize(__nvl, __e);
+	__t.deserialize(__cnvl, __e);
+};
+#endif
+
+} // namespace detail
+
 template<typename _Object, typename _Member>
-struct nv_field {
+struct nv_field : __detail::__serializer_tag {
 	nv_field(std::string __name, _Member _Object::* __ptr)
 		: __field_name(__name)
 		, __field_ptr(__ptr)
@@ -285,10 +310,43 @@ private:
 	_Member _Object::* __field_ptr;
 };
 
+template<typename _Member>
+struct nv_literal;
+
+template<>
+struct nv_literal<std::string_view> : __detail::__serializer_tag {
+	nv_literal(std::string __name, std::string __value)
+		: __field_name(__name)
+		, __field_value(__value)
+	{
+	}
+
+	template<typename _Object>
+	auto serialize(nv_list &__nvl, _Object const &) {
+		__nvl.add_string(__field_name, __field_value);
+	}
+
+	template<typename _Object>
+	auto deserialize(const_nv_list const &__nvl, _Object &) {
+		auto __value = __nvl.get_string(__field_name);
+		// TODO: possibly we could have a specific exception for this
+		if (__value != __field_value)
+			throw nv_key_not_found(__field_name);
+	}
+
+private:
+	std::string __field_name;
+	std::string __field_value;
+};
+
+nv_literal(std::string, char const *) -> nv_literal<std::string_view>;
+nv_literal(std::string, std::string) -> nv_literal<std::string_view>;
+nv_literal(std::string, std::string_view) -> nv_literal<std::string_view>;
+
 namespace __detail {
 
-template<typename _First, typename _Second>
-struct __field_sequence {
+template<__serializer _First, __serializer _Second>
+struct __field_sequence : __detail::__serializer_tag {
 	__field_sequence(_First __first_, _Second __second_)
 		: __first(__first_)
 		, __second(__second_)
@@ -314,6 +372,7 @@ private:
 
 } // namespace __detail
 
+#if 0
 template<typename _Object, typename _M1, typename _M2>
 auto operator>> (nv_field<_Object, _M1> const &__f1,
 		 nv_field<_Object, _M2> const &__f2)
@@ -324,6 +383,12 @@ auto operator>> (nv_field<_Object, _M1> const &__f1,
 template<typename _Object, typename _M, typename __first, typename __second>
 auto operator>> (__detail::__field_sequence<__first, __second> const &__f1,
 		 nv_field<_Object, _M> const &__f2)
+{
+	return (__detail::__field_sequence(__f1, __f2));
+}
+#endif
+auto operator>> (__detail::__serializer auto const &__f1,
+		 __detail::__serializer auto const &__f2)
 {
 	return (__detail::__field_sequence(__f1, __f2));
 }

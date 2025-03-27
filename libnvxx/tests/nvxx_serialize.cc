@@ -188,7 +188,8 @@ struct object {
 template<>
 struct bsd::nv_schema<::object> {
 	auto get() {
-		return	(bsd::nv_field("int value", &object::int_value)
+		return	(bsd::nv_literal("object type", "object")
+			>> bsd::nv_field("int value", &object::int_value)
 			>> bsd::nv_field("string value", &object::string_value)
 			>> bsd::nv_field("array value", &object::array_value));
 	}
@@ -205,6 +206,35 @@ TEST_CASE(nv_serialize)
 	ATF_REQUIRE_EQ("quux", obj2.string_value);
 	ATF_REQUIRE_EQ(true, std::ranges::equal(obj2.array_value,
 						std::vector{42, 666, 1024}));
+}
+
+struct test_object {
+	std::uint64_t value{};
+};
+
+template<>
+struct bsd::nv_schema<::test_object> {
+	auto get() {
+		return	(bsd::nv_literal("object type", "test object")
+			>> bsd::nv_field("value", &::test_object::value));
+	}
+};
+
+TEST_CASE(nv_serialize_literal)
+{
+	auto obj = test_object{};
+	auto nvl = bsd::nv_serialize(obj);
+	ATF_REQUIRE_EQ("test object", nvl.get_string("object type"));
+}
+
+TEST_CASE(nv_deserialize_bad_literal)
+{
+	auto nvl = bsd::nv_list();
+	nvl.add_number("value", 42u);
+
+	auto obj = test_object{};
+	ATF_REQUIRE_THROW(bsd::nv_key_not_found,
+			  bsd::nv_deserialize(nvl, obj));
 }
 
 ATF_INIT_TEST_CASES(tcs)
@@ -224,4 +254,6 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nv_encoder_optional);
 
 	ATF_ADD_TEST_CASE(tcs, nv_serialize);
+	ATF_ADD_TEST_CASE(tcs, nv_serialize_literal);
+	ATF_ADD_TEST_CASE(tcs, nv_deserialize_bad_literal);
 }
