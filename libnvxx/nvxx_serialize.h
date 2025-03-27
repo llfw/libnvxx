@@ -283,13 +283,13 @@ struct nv_field : __detail::__serializer_tag {
 	{
 	}
 
-	auto serialize(nv_list &__nvl, _Object const &__object) {
+	auto serialize(nv_list &__nvl, _Object const &__object) const {
 		nv_encoder<_Member>{}.encode(__nvl,
 					     __field_name,
 					     __object.*__field_ptr);
 	}
 
-	auto deserialize(const_nv_list const &__nvl, _Object &__object) {
+	auto deserialize(const_nv_list const &__nvl, _Object &__object) const {
 		__object.*__field_ptr = nv_decoder<_Member>{}
 						.decode(__nvl, __field_name);
 	}
@@ -315,12 +315,12 @@ struct nv_literal<std::string_view> : __detail::__serializer_tag {
 	}
 
 	template<typename _Object>
-	auto serialize(nv_list &__nvl, _Object const &) {
+	auto serialize(nv_list &__nvl, _Object const &) const {
 		__nvl.add_string(__field_name, __field_value);
 	}
 
 	template<typename _Object>
-	auto deserialize(const_nv_list const &__nvl, _Object &) {
+	auto deserialize(const_nv_list const &__nvl, _Object &) const {
 		auto __value = __nvl.get_string(__field_name);
 		// TODO: possibly we could have a specific exception for this
 		if (__value != __field_value)
@@ -347,13 +347,13 @@ struct __field_sequence : __detail::__serializer_tag {
 	}
 
 	template<typename _Object>
-	auto serialize(nv_list &__nvl, _Object const &__object) {
+	auto serialize(nv_list &__nvl, _Object const &__object) const {
 		__first.serialize(__nvl, __object);
 		__second.serialize(__nvl, __object);
 	}
 
 	template<typename _Object>
-	auto deserialize(const_nv_list const &__nvl, _Object &__object) {
+	auto deserialize(const_nv_list const &__nvl, _Object &__object) const {
 		__first.deserialize(__nvl, __object);
 		__second.deserialize(__nvl, __object);
 	}
@@ -374,15 +374,29 @@ auto operator>> (__detail::__serializer auto const &__f1,
 template<typename _T>
 struct nv_schema;
 
-template<typename _T>
-auto nv_serialize(_T &&__o) -> nv_list
+nv_list
+nv_serialize(auto &&__o, __detail::__serializer auto const &__schema)
 {
-	using __schema_type = nv_schema<std::remove_cvref_t<_T>>;
-	auto __schema = __schema_type{}.get();
 	auto __nvl = nv_list();
-
 	__schema.serialize(__nvl, __o);
 	return (__nvl);
+}
+
+template<typename _Object>
+nv_list
+nv_serialize(_Object &&__o)
+{
+	using __schema_type = nv_schema<std::remove_cvref_t<decltype(__o)>>;
+	auto __schema = __schema_type{}.get();
+	return nv_serialize(std::forward<_Object>(__o), __schema);
+}
+
+void
+nv_deserialize(const_nv_list const &__nvl,
+	       auto &__obj,
+	       __detail::__serializer auto const &__schema)
+{
+	__schema.deserialize(__nvl, __obj);
 }
 
 template<typename _Object>
@@ -390,8 +404,7 @@ void nv_deserialize(const_nv_list const &__nvl, _Object &__obj)
 {
 	using __schema_type = nv_schema<std::remove_cvref_t<_Object>>;
 	auto __schema = __schema_type{}.get();
-
-	__schema.deserialize(__nvl, __obj);
+	nv_deserialize(__nvl, __obj, __schema);
 }
 
 } // namespace bsd
