@@ -167,8 +167,6 @@ struct __const_nv_list : virtual __nv_list_base {
 	[[nodiscard]] bool exists_type(std::string_view __key,
 				       int __type) const;
 
-	// TODO: exists_type()
-
 	/* exists */
 
 	[[nodiscard]] bool exists_null(std::string_view __key) const;
@@ -289,7 +287,7 @@ struct __nv_list : virtual __nv_list_base {
 		-> std::uint64_t;
 	[[nodiscard]] auto take_string(std::string_view __key) -> std::string;
 	[[nodiscard]] auto take_nvlist(std::string_view __key) -> nv_list;
-	[[nodiscard]] auto take_descriptor(std::string_view __key) -> int;
+	[[nodiscard]] auto take_descriptor(std::string_view __key) -> nv_fd;
 	[[nodiscard]] auto take_binary(std::string_view __key)
 		-> std::vector<std::byte>;
 
@@ -307,7 +305,7 @@ struct __nv_list : virtual __nv_list_base {
 	take_nvlist_array(std::string_view __key) -> std::vector<nv_list>;
 
 	[[nodiscard]] auto
-	take_descriptor_array(std::string_view __key) -> std::vector<int>;
+	take_descriptor_array(std::string_view __key) -> std::vector<nv_fd>;
 
 	/* move */
 

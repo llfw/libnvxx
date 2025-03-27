@@ -21,6 +21,8 @@
 #include <stdexcept>
 #include <format>
 
+#include <unistd.h>
+
 #include "nvxx_util.h"
 #include "nvxx_base.h"
 #include "nvxx_iterator.h"

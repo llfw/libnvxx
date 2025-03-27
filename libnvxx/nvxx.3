@@ -16,6 +16,19 @@
 namespace bsd {
 
 // exposition only
+struct nv_fd {
+        explicit nv_fd(int fd) noexcept;
+        nv_fd(nv_fd &&other) noexcept;
+        nv_fd(nv_fd const &) = delete;
+
+        nv_fd& operator=(nv_fd &&other) noexcept;
+        nv_fd& operator=(nv_fd const &) = delete;
+
+        int get() const;
+        int release() &&;
+};
+
+// exposition only
 struct nv_error : std::runtime_error {
 };
 
@@ -146,7 +159,7 @@ struct nv_list : <unspecified> {
 	auto take_bool(std::string_view key) -> bool;
 	auto take_number(std::string_view key) -> std::uint64_t;
 	auto take_string(std::string_view key) -> std::string;
-	auto take_descriptor(std::string_view key) -> int;
+	auto take_descriptor(std::string_view key) -> nv_fd;
 	auto take_nvlist(std::string_view key) -> nv_list;
 
 	void move_bool_array(std::string_view key, std::span<bool>);
@@ -196,7 +209,7 @@ struct nv_list : <unspecified> {
 	auto take_number_array(std::string_view key) -> container-type<std::uint64_t>;
 	auto take_string_array(std::string_view key) -> container-type<std::string>;
 	auto take_nvlist_array(std::string_view key) -> container-type<nv_list>;
-	auto take_descriptor_array(std::string_view __key) -> container-type<int>;
+	auto take_descriptor_array(std::string_view __key) -> container-type<nv_fd>;
 	auto take_binary(std::string_view key) -> container-type<std::byte>;
 };
 
@@ -313,6 +326,34 @@ exception.
 The
 .Va nv_error_state::error
 member variable may then be used to determine which specific error occurred.
+.Sh THE NV_FD TYPE
+The C++ library uses a type called
+.Vt bsd::nv_fd
+for functions which take or return file descriptors.
+An
+.Vt nv_fd
+may be created from a file descriptor, at which point it takes ownership of the
+file descriptor and will close it when destructed.
+An
+.Vt nv_fd
+may be move-initialized and move-assigned, but may not be copied.
+.Pp
+To retrieve the file descriptor stored by an
+.Vt nv_fd
+without taking ownership, use the
+.Fn get
+member function.
+To retrieve the file descriptor and take ownership of it, use the
+.Fn release
+member function, which leaves the
+.Vt nv_fd
+in a moved-from state.
+.Pp
+A moved-from
+.Vt nv_fd
+may be assigned to, but any attempt to retrieve the store file descriptor will
+throw an exception of type
+.Vt std::logic_error .
 .Sh CONST_NV_LIST OPERATIONS
 The
 .Fn dump

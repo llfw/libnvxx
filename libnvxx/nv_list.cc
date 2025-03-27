@@ -710,12 +710,13 @@ __nv_list::free_nvlist_array(std::string_view key)
  * descriptor operations
  */
 
-int
+nv_fd
 __nv_list::take_descriptor(std::string_view key)
 {
 	__throw_if_error();
 
-	return (::nvlist_take_descriptor(__m_nv, std::string(key).c_str()));
+	auto fd = ::nvlist_take_descriptor(__m_nv, std::string(key).c_str());
+	return (nv_fd(fd));
 }
 
 void
@@ -805,17 +806,34 @@ __nv_list::free_descriptor_array(std::string_view key)
 	free_type(key, NV_TYPE_DESCRIPTOR_ARRAY);
 }
 
-std::vector<int>
+std::vector<nv_fd>
 __nv_list::take_descriptor_array(std::string_view key)
 {
 	__throw_if_error();
+
+	// define this here to avoid throwing after we call
+	// nvlist_take_descriptor_array().
+	auto ret = std::vector<nv_fd>{};
 
 	auto nitems = std::size_t{};
 	auto ptr = __ptr_guard(
 		::nvlist_take_descriptor_array(__m_nv,
 					       std::string(key).c_str(),
 					       &nitems));
-	return {ptr.__ptr, ptr.__ptr + nitems};
+	auto fds = std::span(ptr.__ptr, ptr.__ptr + nitems);
+
+	try {
+		ret.reserve(fds.size());
+		for (auto fd : fds)
+			ret.push_back(nv_fd(fd));
+
+		return ret;
+	} catch (...) {
+		// close all the fds we didn't manage to add to the vector
+		for (auto fd : fds.subspan(ret.size()))
+			(void)::close(fd);
+		throw;
+	}
 }
 
 /*
