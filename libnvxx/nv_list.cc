@@ -155,7 +155,7 @@ __nv_list::operator const_nv_list() const
 void
 __nv_list::free(std::string_view key)
 {
-	::nvlist_free(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_NONE);
 }
 
 void
@@ -243,7 +243,7 @@ __nv_list::take_bool(std::string_view key)
 void
 __nv_list::free_bool(std::string_view key)
 {
-	::nvlist_free_bool(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_BOOL);
 }
 
 std::vector<bool>
@@ -297,7 +297,7 @@ __nv_list::append_bool_array(std::string_view key, bool value)
 void
 __nv_list::free_bool_array(std::string_view key)
 {
-	::nvlist_free_bool_array(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_BOOL_ARRAY);
 }
 
 /*
@@ -340,7 +340,7 @@ __nv_list::take_number(std::string_view key)
 void
 __nv_list::free_number(std::string_view key)
 {
-	::nvlist_free_number(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_NUMBER);
 }
 
 std::vector<std::uint64_t>
@@ -397,7 +397,7 @@ __nv_list::append_number_array(std::string_view key, std::uint64_t value)
 void
 __nv_list::free_number_array(std::string_view key)
 {
-	::nvlist_free_number_array(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_NUMBER_ARRAY);
 }
 
 /*
@@ -446,7 +446,7 @@ __nv_list::take_string(std::string_view key)
 void
 __nv_list::free_string(std::string_view key)
 {
-	nvlist_free_string(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_STRING);
 }
 
 void
@@ -515,7 +515,7 @@ __nv_list::take_string_array(std::string_view key)
 void
 __nv_list::free_string_array(std::string_view key)
 {
-	::nvlist_free_string_array(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_STRING_ARRAY);
 }
 
 /*
@@ -572,7 +572,7 @@ __nv_list::take_nvlist(std::string_view key)
 void
 __nv_list::free_nvlist(std::string_view key)
 {
-	nvlist_free_nvlist(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_NVLIST);
 }
 
 void
@@ -663,7 +663,7 @@ __nv_list::take_nvlist_array(std::string_view key)
 void
 __nv_list::free_nvlist_array(std::string_view key)
 {
-	::nvlist_free_nvlist_array(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_NVLIST_ARRAY);
 }
 
 /*
@@ -707,7 +707,7 @@ __nv_list::move_descriptor(std::string_view key, int value)
 void
 __nv_list::free_descriptor(std::string_view key)
 {
-	::nvlist_free_descriptor(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_DESCRIPTOR);
 }
 
 void
@@ -754,7 +754,7 @@ __nv_list::move_descriptor_array(std::string_view key, std::span<int> value)
 void
 __nv_list::free_descriptor_array(std::string_view key)
 {
-	::nvlist_free_descriptor_array(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_DESCRIPTOR_ARRAY);
 }
 
 std::vector<int>
@@ -807,7 +807,7 @@ __nv_list::move_binary(std::string_view key, std::span<std::byte> value)
 void
 __nv_list::free_binary(std::string_view key)
 {
-	::nvlist_free_binary(__m_nv, std::string(key).c_str());
+	free_type(key, NV_TYPE_BINARY);
 }
 
 std::vector<std::byte>
