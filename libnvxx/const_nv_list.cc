@@ -62,32 +62,36 @@ namespace __detail {
 std::error_code
 __const_nv_list::error() const noexcept
 {
-	if (auto const err = nvlist_error(__m_nv); err != 0)
+	if (auto const err = ::nvlist_error(__m_nv); err != 0)
 		return (std::make_error_code(std::errc(err)));
 	return {};
 }
 
 bool
-__const_nv_list::exists(std::string_view key) const
-{
-	return (::nvlist_exists(__m_nv, std::string(key).c_str()));
-}
-
-bool
 __const_nv_list::exists_type(std::string_view key, int type) const
 {
+	__throw_if_error();
 	return (::nvlist_exists_type(__m_nv, std::string(key).c_str(), type));
 }
 
 bool
+__const_nv_list::exists(std::string_view key) const
+{
+	return exists_type(key, NV_TYPE_NONE);
+}
+
+
+bool
 __const_nv_list::empty() const noexcept
 {
+	__throw_if_error();
 	return (::nvlist_empty(__m_nv));
 }
 
 int
 __const_nv_list::flags() const noexcept
 {
+	__throw_if_error();
 	return (::nvlist_flags(__m_nv));
 }
 
@@ -134,6 +138,8 @@ __const_nv_list::packed_size() const noexcept
 std::vector<std::byte>
 __const_nv_list::pack() const
 {
+	__throw_if_error();
+
 	auto size = std::size_t{};
 
 	if (auto *data = nvlist_pack(__m_nv, &size); data != nullptr) {
@@ -151,7 +157,7 @@ __const_nv_list::pack() const
 bool
 __const_nv_list::exists_null(std::string_view key) const
 {
-	return (::nvlist_exists_null(__m_nv, std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_NULL));
 }
 
 /*
@@ -161,12 +167,14 @@ __const_nv_list::exists_null(std::string_view key) const
 bool
 __const_nv_list::exists_bool(std::string_view key) const
 {
-	return (::nvlist_exists_bool(__m_nv, std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_BOOL));
 }
 
 bool
 __const_nv_list::get_bool(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_bool(__m_nv, skey.c_str()))
@@ -178,12 +186,14 @@ __const_nv_list::get_bool(std::string_view key) const
 bool
 __const_nv_list::exists_bool_array(std::string_view key) const
 {
-	return (::nvlist_exists_bool_array(__m_nv, std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_BOOL_ARRAY));
 }
 
 std::span<bool const>
 __const_nv_list::get_bool_array(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_bool_array(__m_nv, skey.c_str()))
@@ -201,12 +211,14 @@ __const_nv_list::get_bool_array(std::string_view key) const
 bool
 __const_nv_list::exists_number(std::string_view key) const
 {
-	return (::nvlist_exists_number(__m_nv, std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_NUMBER));
 }
 
 std::uint64_t
 __const_nv_list::get_number(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_number(__m_nv, skey.c_str()))
@@ -218,13 +230,14 @@ __const_nv_list::get_number(std::string_view key) const
 bool
 __const_nv_list::exists_number_array(std::string_view key) const
 {
-	return (::nvlist_exists_number_array(__m_nv,
-					     std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_NUMBER_ARRAY));
 }
 
 std::span<std::uint64_t const>
 __const_nv_list::get_number_array(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_number_array(__m_nv, skey.c_str()))
@@ -242,12 +255,14 @@ __const_nv_list::get_number_array(std::string_view key) const
 bool
 __const_nv_list::exists_string(std::string_view key) const
 {
-	return (::nvlist_exists_string(__m_nv, std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_STRING));
 }
 
 std::string_view
 __const_nv_list::get_string(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_string(__m_nv, skey.c_str()))
@@ -259,13 +274,14 @@ __const_nv_list::get_string(std::string_view key) const
 bool
 __const_nv_list::exists_string_array(std::string_view key) const
 {
-	return (::nvlist_exists_string_array(__m_nv,
-					     std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_STRING_ARRAY));
 }
 
 std::vector<std::string_view>
 __const_nv_list::get_string_array(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_string_array(__m_nv, skey.c_str()))
@@ -285,12 +301,14 @@ __const_nv_list::get_string_array(std::string_view key) const
 bool
 __const_nv_list::exists_nvlist(std::string_view key) const
 {
-	return (::nvlist_exists_nvlist(__m_nv, std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_NVLIST));
 }
 
 const_nv_list
 __const_nv_list::get_nvlist(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_nvlist(__m_nv, skey.c_str()))
@@ -303,13 +321,14 @@ __const_nv_list::get_nvlist(std::string_view key) const
 bool
 __const_nv_list::exists_nvlist_array(std::string_view key) const
 {
-	return (::nvlist_exists_nvlist_array(__m_nv,
-					     std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_NVLIST_ARRAY));
 }
 
 std::vector<const_nv_list>
 __const_nv_list::get_nvlist_array(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_nvlist_array(__m_nv, skey.c_str()))
@@ -328,6 +347,8 @@ __const_nv_list::get_nvlist_array(std::string_view key) const
 int
 __const_nv_list::get_descriptor(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_descriptor(__m_nv, skey.c_str()))
@@ -339,6 +360,8 @@ __const_nv_list::get_descriptor(std::string_view key) const
 std::span<int const>
 __const_nv_list::get_descriptor_array(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_descriptor_array(__m_nv, skey.c_str()))
@@ -353,14 +376,13 @@ __const_nv_list::get_descriptor_array(std::string_view key) const
 bool
 __const_nv_list::exists_descriptor(std::string_view key) const
 {
-	return (::nvlist_exists_descriptor(__m_nv, std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_DESCRIPTOR));
 }
 
 bool
 __const_nv_list::exists_descriptor_array(std::string_view key) const
 {
-	return (::nvlist_exists_descriptor_array(__m_nv,
-						 std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_DESCRIPTOR_ARRAY));
 }
 
 /*
@@ -370,12 +392,14 @@ __const_nv_list::exists_descriptor_array(std::string_view key) const
 bool
 __const_nv_list::exists_binary(std::string_view key) const
 {
-	return (::nvlist_exists_binary(__m_nv, std::string(key).c_str()));
+	return (exists_type(key, NV_TYPE_BINARY));
 }
 
 std::span<std::byte const>
 __const_nv_list::get_binary(std::string_view key) const
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_binary(__m_nv, skey.c_str()))

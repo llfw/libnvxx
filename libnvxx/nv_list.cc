@@ -144,6 +144,8 @@ namespace __detail {
 void
 __nv_list::set_error(int error) noexcept
 {
+	// nvlist does not allow changing an existing error state
+	__throw_if_error();
 	::nvlist_set_error(__m_nv, error);
 }
 
@@ -232,6 +234,8 @@ __nv_list::add_bool(std::string_view key, bool value)
 bool
 __nv_list::take_bool(std::string_view key)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_bool(__m_nv, skey.c_str()))
@@ -249,6 +253,8 @@ __nv_list::free_bool(std::string_view key)
 std::vector<bool>
 __nv_list::take_bool_array(std::string_view key)
 {
+	__throw_if_error();
+
 	auto nitems = std::size_t{};
 	auto ptr = __ptr_guard(::nvlist_take_bool_array(
 			__m_nv, std::string(key).c_str(), &nitems));
@@ -283,6 +289,8 @@ __nv_list::add_bool_array(std::string_view key,
 void
 __nv_list::move_bool_array(std::string_view key, std::span<bool> value)
 {
+	__throw_if_error();
+
 	::nvlist_move_bool_array(__m_nv, std::string(key).c_str(),
 				 std::ranges::data(value),
 				 std::ranges::size(value));
@@ -291,6 +299,8 @@ __nv_list::move_bool_array(std::string_view key, std::span<bool> value)
 void
 __nv_list::append_bool_array(std::string_view key, bool value)
 {
+	__throw_if_error();
+
 	::nvlist_append_bool_array(__m_nv, std::string(key).c_str(), value);
 }
 
@@ -329,6 +339,8 @@ __nv_list::add_number(std::string_view key, std::uint64_t value)
 std::uint64_t
 __nv_list::take_number(std::string_view key)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_number(__m_nv, skey.c_str()))
@@ -346,6 +358,8 @@ __nv_list::free_number(std::string_view key)
 std::vector<std::uint64_t>
 __nv_list::take_number_array(std::string_view key)
 {
+	__throw_if_error();
+
 	auto nitems = std::size_t{};
 	auto ptr = __ptr_guard(
 		::nvlist_take_number_array(__m_nv,
@@ -383,6 +397,8 @@ void
 __nv_list::move_number_array(std::string_view key,
 			     std::span<std::uint64_t> value)
 {
+	__throw_if_error();
+
 	::nvlist_move_number_array(__m_nv, std::string(key).c_str(),
 				   std::ranges::data(value),
 				   std::ranges::size(value));
@@ -391,6 +407,8 @@ __nv_list::move_number_array(std::string_view key,
 void
 __nv_list::append_number_array(std::string_view key, std::uint64_t value)
 {
+	__throw_if_error();
+
 	::nvlist_append_number_array(__m_nv, std::string(key).c_str(), value);
 }
 
@@ -429,12 +447,16 @@ __nv_list::add_string(std::string_view key, std::string_view value)
 void
 __nv_list::move_string(std::string_view key, char *value)
 {
+	__throw_if_error();
+
 	::nvlist_move_string(__m_nv, std::string(key).c_str(), value);
 }
 
 std::string
 __nv_list::take_string(std::string_view key)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_string(__m_nv, skey.c_str()))
@@ -488,6 +510,8 @@ void
 __nv_list::move_string_array(std::string_view key,
 			     std::span<char *> value)
 {
+	__throw_if_error();
+
 	::nvlist_move_string_array(__m_nv, std::string(key).c_str(),
 				   std::ranges::data(value),
 				   std::ranges::size(value));
@@ -496,6 +520,8 @@ __nv_list::move_string_array(std::string_view key,
 void
 __nv_list::append_string_array(std::string_view key, std::string_view value)
 {
+	__throw_if_error();
+
 	::nvlist_append_string_array(__m_nv, 
 				     std::string(key).c_str(), 
 				     std::string(value).c_str());
@@ -504,6 +530,8 @@ __nv_list::append_string_array(std::string_view key, std::string_view value)
 std::vector<std::string>
 __nv_list::take_string_array(std::string_view key)
 {
+	__throw_if_error();
+
 	auto nitems = std::size_t{};
 	auto *data = nvlist_take_string_array(__m_nv, std::string(key).c_str(),
 					      &nitems);
@@ -547,6 +575,8 @@ __nv_list::add_nvlist(std::string_view key, const_nv_list const &other)
 void
 __nv_list::move_nvlist(std::string_view key, nv_list &&value)
 {
+	__throw_if_error();
+
 	::nvlist_move_nvlist(__m_nv, std::string(key).c_str(),
 			     std::exchange(value.__m_nv, nullptr));
 }
@@ -554,12 +584,16 @@ __nv_list::move_nvlist(std::string_view key, nv_list &&value)
 void
 __nv_list::move_nvlist(std::string_view key, ::nvlist_t *value)
 {
+	__throw_if_error();
+
 	::nvlist_move_nvlist(__m_nv, std::string(key).c_str(), value);
 }
 
 nv_list
 __nv_list::take_nvlist(std::string_view key)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_nvlist(__m_nv, skey.c_str()))
@@ -635,6 +669,8 @@ void
 __nv_list::move_nvlist_array(std::string_view key,
 			     std::span<::nvlist_t *> value)
 {
+	__throw_if_error();
+
 	::nvlist_move_nvlist_array(__m_nv, std::string(key).c_str(),
 				   std::ranges::data(value),
 				   std::ranges::size(value));
@@ -644,6 +680,8 @@ void
 __nv_list::append_nvlist_array(std::string_view key,
 			       const_nv_list const &value)
 {
+	__throw_if_error();
+
 	::nvlist_append_nvlist_array(__m_nv, std::string(key).c_str(),
 				     value.__m_nv);
 }
@@ -651,6 +689,8 @@ __nv_list::append_nvlist_array(std::string_view key,
 std::vector<nv_list>
 __nv_list::take_nvlist_array(std::string_view key)
 {
+	__throw_if_error();
+
 	auto nitems = std::size_t{};
 	auto ptr = __ptr_guard(
 		::nvlist_take_nvlist_array(__m_nv,
@@ -673,6 +713,8 @@ __nv_list::free_nvlist_array(std::string_view key)
 int
 __nv_list::take_descriptor(std::string_view key)
 {
+	__throw_if_error();
+
 	return (::nvlist_take_descriptor(__m_nv, std::string(key).c_str()));
 }
 
@@ -701,6 +743,8 @@ __nv_list::add_descriptor(std::string_view key, int value)
 void
 __nv_list::move_descriptor(std::string_view key, int value)
 {
+	__throw_if_error();
+
 	::nvlist_move_descriptor(__m_nv, std::string(key).c_str(), value);
 }
 
@@ -713,6 +757,8 @@ __nv_list::free_descriptor(std::string_view key)
 void
 __nv_list::append_descriptor_array(std::string_view key, int value)
 {
+	__throw_if_error();
+
 	::nvlist_append_descriptor_array(__m_nv,
 					 std::string(key).c_str(),
 					 value);
@@ -746,6 +792,8 @@ __nv_list::add_descriptor_array(std::string_view key,
 void
 __nv_list::move_descriptor_array(std::string_view key, std::span<int> value)
 {
+	__throw_if_error();
+
 	::nvlist_add_descriptor_array(__m_nv, std::string(key).c_str(),
 				      std::ranges::data(value),
 				      std::ranges::size(value));
@@ -760,6 +808,8 @@ __nv_list::free_descriptor_array(std::string_view key)
 std::vector<int>
 __nv_list::take_descriptor_array(std::string_view key)
 {
+	__throw_if_error();
+
 	auto nitems = std::size_t{};
 	auto ptr = __ptr_guard(
 		::nvlist_take_descriptor_array(__m_nv,
@@ -799,6 +849,8 @@ __nv_list::add_binary(std::string_view key, std::span<std::byte const> value)
 void
 __nv_list::move_binary(std::string_view key, std::span<std::byte> value)
 {
+	__throw_if_error();
+
 	::nvlist_move_binary(__m_nv, std::string(key).c_str(),
 			     std::ranges::data(value),
 			     std::ranges::size(value));
@@ -813,6 +865,8 @@ __nv_list::free_binary(std::string_view key)
 std::vector<std::byte>
 __nv_list::take_binary(std::string_view key)
 {
+	__throw_if_error();
+
 	auto skey = std::string(key);
 
 	if (!::nvlist_exists_binary(__m_nv, skey.c_str()))

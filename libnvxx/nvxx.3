@@ -294,6 +294,25 @@ nvlist.
 Thrown when an attempt is made to add a key to an nvlist when a key of the same
 name is already present, and the list does permit duplicates.
 .El
+.Pp
+The underlying C library has the concept of an error state, an internal flag
+on the nvlist which indicates an error has previously occurred.
+Once an nvlist is in the error state, no operations on the nvlist are
+permitted.
+This error state cannot be cleared.
+.Pp
+The C++ library will prohibit any operation which would result in the error
+state being set on the underlying nvlist, and such operations will throw an
+exception instead.
+If the underlying nvlist does enter the error state (for example, because the
+nvlist was manually modified using the
+.Fn ptr
+member function), then all subsequent operations will fail and throw the
+.Vt nv_error_state
+exception.
+The
+.Va nv_error_state::error
+member variable may then be used to determine which specific error occurred.
 .Sh CONST_NV_LIST OPERATIONS
 The
 .Fn dump
@@ -338,6 +357,10 @@ member function serializes the nvlist to a byte stream and returns it.
 The byte stream can later be passed to
 .Fn nv_list::unpack
 to turn it back into an nvlist.
+If the pack operation fails (for example, due to an out-of-memory condition),
+then an exception of type
+.Vt std::system_error
+will be thrown.
 .Pp
 The
 .Fn packed_size
