@@ -65,7 +65,7 @@ nv_list::operator=(nv_list const &other)
 		__m_owning = __detail::__nvlist_owning::__owning;
 	}
 
-	return *this;
+	return (*this);
 }
 
 nv_list &
@@ -76,25 +76,25 @@ nv_list::operator=(nv_list &&other) noexcept
 		__m_owning = __detail::__nvlist_owning::__owning;
 	}
 
-	return *this;
+	return (*this);
 }
 
 ::nvlist_t *
 nv_list::ptr()
 {
-	return __m_nv;
+	return (__m_nv);
 }
 
 ::nvlist_t const *
 nv_list::ptr() const
 {
-	return __m_nv;
+	return (__m_nv);
 }
 
 ::nvlist_t *
 nv_list::release() &&
 {
-	return std::exchange(__m_nv, nullptr);
+	return (std::exchange(__m_nv, nullptr));
 }
 
 nv_list
@@ -104,7 +104,7 @@ nv_list::unpack(std::span<std::byte> data, int flags)
 				      std::ranges::size(data),
 				      flags);
 	    nv != nullptr) {
-		return nv_list(nv);
+		return (nv_list(nv));
 	}
 
 	throw std::system_error(
@@ -115,7 +115,7 @@ nv_list
 nv_list::recv(int fd, int flags)
 {
 	if (auto *nv = ::nvlist_recv(fd, flags); nv != nullptr)
-		return nv_list(nv);
+		return (nv_list(nv));
 
 	throw std::system_error(
 		std::error_code(errno, std::system_category()));
@@ -128,7 +128,7 @@ nv_list::xfer(int fd, nv_list &&nvl, int flags)
 	    nv != nullptr) {
 		// nvlist_xfer destroys the original list
 		nvl.__m_nv = nullptr;
-		return nv_list(nv);
+		return (nv_list(nv));
 	}
 
 	throw std::system_error(
@@ -149,7 +149,7 @@ __nv_list::set_error(int error) noexcept
 
 __nv_list::operator const_nv_list() const
 {
-	return const_nv_list(__m_nv);
+	return (const_nv_list(__m_nv));
 }
 
 void
@@ -237,7 +237,7 @@ __nv_list::take_bool(std::string_view key)
 	if (!::nvlist_exists_bool(__m_nv, skey.c_str()))
 		throw nv_key_not_found(skey);
 
-	return ::nvlist_take_bool(__m_nv, skey.c_str());
+	return (::nvlist_take_bool(__m_nv, skey.c_str()));
 }
 
 void
@@ -252,7 +252,7 @@ __nv_list::take_bool_array(std::string_view key)
 	auto nitems = std::size_t{};
 	auto ptr = __ptr_guard(::nvlist_take_bool_array(
 			__m_nv, std::string(key).c_str(), &nitems));
-	return std::vector<bool>(ptr.__ptr, ptr.__ptr + nitems);
+	return (std::vector<bool>(ptr.__ptr, ptr.__ptr + nitems));
 }
 
 void
@@ -334,7 +334,7 @@ __nv_list::take_number(std::string_view key)
 	if (!::nvlist_exists_number(__m_nv, skey.c_str()))
 		throw nv_key_not_found(skey);
 
-	return ::nvlist_take_number(__m_nv, skey.c_str());
+	return (::nvlist_take_number(__m_nv, skey.c_str()));
 }
 
 void
@@ -440,7 +440,7 @@ __nv_list::take_string(std::string_view key)
 	if (!::nvlist_exists_string(__m_nv, skey.c_str()))
 		throw nv_key_not_found(skey);
 
-	return nvlist_take_string(__m_nv, skey.c_str());
+	return (::nvlist_take_string(__m_nv, skey.c_str()));
 }
 
 void
@@ -507,9 +507,9 @@ __nv_list::take_string_array(std::string_view key)
 	auto nitems = std::size_t{};
 	auto *data = nvlist_take_string_array(__m_nv, std::string(key).c_str(),
 					      &nitems);
-	return std::span(data, data + nitems)
+	return (std::span(data, data + nitems)
 		| construct<std::string>()
-		| std::ranges::to<std::vector>();
+		| std::ranges::to<std::vector>());
 }
 
 void
@@ -566,7 +566,7 @@ __nv_list::take_nvlist(std::string_view key)
 		throw nv_key_not_found(skey);
 
 	auto nvl = nvlist_take_nvlist(__m_nv, skey.c_str());
-	return nv_list(nvl);
+	return (nv_list(nvl));
 }
 
 void
@@ -615,8 +615,8 @@ __nv_list::add_nvlist_array(std::string_view key,
 		| std::views::transform(&nv_list::__m_nv)
 		| std::ranges::to<std::vector>();
 
-	nvlist_add_nvlist_array(__m_nv, skey.c_str(),
-				ptrs.data(), ptrs.size());
+	::nvlist_add_nvlist_array(__m_nv, skey.c_str(),
+				  ptrs.data(), ptrs.size());
 
 	switch (auto err = ::nvlist_error(__m_nv)) {
 	case 0:
@@ -673,7 +673,7 @@ __nv_list::free_nvlist_array(std::string_view key)
 int
 __nv_list::take_descriptor(std::string_view key)
 {
-	return ::nvlist_take_descriptor(__m_nv, std::string(key).c_str());
+	return (::nvlist_take_descriptor(__m_nv, std::string(key).c_str()));
 }
 
 void

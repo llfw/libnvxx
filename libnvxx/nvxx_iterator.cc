@@ -10,13 +10,13 @@ namespace bsd {
 nv_list_iterator
 begin(const_nv_list const &nvl)
 {
-	return nv_list_iterator(nvl);
+	return (nv_list_iterator(nvl));
 }
 
 nv_list_iterator
 begin(nv_list const &nvl)
 {
-	return nv_list_iterator(nvl);
+	return (nv_list_iterator(nvl));
 }
 
 std::default_sentinel_t
@@ -51,7 +51,7 @@ nv_list_iterator &
 nv_list_iterator::operator++()
 {
 	__advance();
-	return *this;
+	return (*this);
 }
 
 nv_list_iterator
@@ -59,32 +59,32 @@ nv_list_iterator::operator++(int)
 {
 	nv_list_iterator tmp = *this;
 	++(*this);
-	return tmp;
+	return (tmp);
 }
 
 bool
 nv_list_iterator::operator==(nv_list_iterator const &other) const
 {
-	return (__nvlist == other.__nvlist)
-		&& (__cookie == other.__cookie);
+	return ((__nvlist == other.__nvlist)
+		&& (__cookie == other.__cookie));
 }
 
 bool
 nv_list_iterator::operator==(std::default_sentinel_t) const 
 {
-	return __cookie == nullptr;
+	return (__cookie == nullptr);
 }
 
 nv_list_iterator::const_reference
 nv_list_iterator::operator*() const
 {
-	return __current;
+	return (__current);
 }
 
 nv_list_iterator::const_pointer
 nv_list_iterator::operator->() const
 {
-	return &__current;
+	return (&__current);
 }
 
 void
@@ -160,7 +160,7 @@ nv_list_iterator::__advance()
 		auto vector =
 			span
 			| std::views::transform([] (char const *ptr) {
-				return std::string_view(ptr);
+				return (std::string_view(ptr));
 			})
 			| std::ranges::to<std::vector>();
 		__current = std::make_pair(name, vector);
@@ -182,7 +182,7 @@ nv_list_iterator::__advance()
 		auto vector =
 			span
 			| std::views::transform([] (::nvlist_t const *ptr) {
-				return const_nv_list(ptr);
+				return (const_nv_list(ptr));
 			})
 			| std::ranges::to<std::vector>();
 		__current = std::make_pair(name, vector);

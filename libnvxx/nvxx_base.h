@@ -631,7 +631,7 @@ struct nv_list final
 	[[nodiscard]] static nv_list
 		unpack(_Range const &__data, int __flags = 0)
 	{
-		return unpack(std::span<std::byte>(__data), __flags);
+		return (unpack(std::span<std::byte>(__data), __flags));
 	}
 
 	/*

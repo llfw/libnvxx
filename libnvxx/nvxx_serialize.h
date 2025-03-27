@@ -79,7 +79,7 @@ struct nv_decoder<bool> {
 template<__detail::__from_range_container_of<bool> _C>
 struct nv_decoder<_C> {
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return _C(std::from_range, __nvl.get_bool_array(__key));
+		return (_C(std::from_range, __nvl.get_bool_array(__key)));
 	}
 };
 
@@ -106,7 +106,7 @@ struct nv_decoder<std::uint64_t> {
 template<__detail::__from_range_container_of<std::uint64_t> _C>
 struct nv_decoder<_C> {
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return _C(std::from_range, __nvl.get_number_array(__key));
+		return (_C(std::from_range, __nvl.get_number_array(__key)));
 	}
 };
 
@@ -123,7 +123,7 @@ struct nv_encoder<_R> {
 	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
 		__nvl.add_string_range(__key,
 		       __range | std::views::transform([] (auto const &__s) {
-			       return std::string_view(__s);
+			       return (std::string_view(__s));
 		       }));
 	}
 };
@@ -136,11 +136,11 @@ struct nv_decoder<std::string> {
 template<__detail::__from_range_container_of<std::string> _C>
 struct nv_decoder<_C> {
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return _C(std::from_range,
+		return (_C(std::from_range,
 			  __nvl.get_string_array(__key)
 			  | std::views::transform([] (auto const &__s) {
 				  return std::string(__s);
-			  }));
+			  })));
 	}
 };
 
@@ -168,7 +168,7 @@ struct nv_decoder<std::string_view> {
 template<__detail::__from_range_container_of<std::string_view> _C>
 struct nv_decoder<_C> {
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return _C(std::from_range, __nvl.get_string_array(__key));
+		return (_C(std::from_range, __nvl.get_string_array(__key)));
 	}
 };
 
@@ -197,11 +197,11 @@ struct nv_decoder<nv_list> {
 template<__detail::__from_range_container_of<nv_list> _C>
 struct nv_decoder<_C> {
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return _C(std::from_range,
+		return (_C(std::from_range,
 			  __nvl.get_nvlist_array(__key)
 			  | std::views::transform([] (auto const &__s) {
 				  return nv_list(__s);
-			  }));
+			  })));
 	}
 };
 
@@ -230,7 +230,7 @@ struct nv_decoder<const_nv_list> {
 template<__detail::__from_range_container_of<const_nv_list> _C>
 struct nv_decoder<_C> {
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return _C(std::from_range, __nvl.get_nvlist_array(__key));
+		return (_C(std::from_range, __nvl.get_nvlist_array(__key)));
 	}
 };
 
@@ -318,14 +318,14 @@ template<typename _Object, typename _M1, typename _M2>
 auto operator>> (nv_field<_Object, _M1> const &__f1,
 		 nv_field<_Object, _M2> const &__f2)
 {
-	return __detail::__field_sequence(__f1, __f2);
+	return (__detail::__field_sequence(__f1, __f2));
 }
 
 template<typename _Object, typename _M, typename __first, typename __second>
 auto operator>> (__detail::__field_sequence<__first, __second> const &__f1,
 		 nv_field<_Object, _M> const &__f2)
 {
-	return __detail::__field_sequence(__f1, __f2);
+	return (__detail::__field_sequence(__f1, __f2));
 }
 
 template<typename _Object, typename _Member>
@@ -343,7 +343,7 @@ auto nv_serialize(_T &&__o) -> nv_list
 	auto __nvl = nv_list();
 
 	__schema.serialize(__nvl, __o);
-	return __nvl;
+	return (__nvl);
 }
 
 template<typename _Object>

@@ -27,7 +27,7 @@ struct __ptr_guard {
 
 template<typename T>
 auto construct = std::views::transform([] (auto &&value) {
-	return T(std::forward<decltype(value)>(value));
+	return (T(std::forward<decltype(value)>(value)));
 });
 
 } // namespace bsd::__detail

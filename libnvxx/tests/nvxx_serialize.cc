@@ -188,9 +188,9 @@ struct object {
 template<>
 struct bsd::nv_schema<::object> {
 	auto get() {
-		return	bsd::nv_field("int value", &object::int_value)
+		return	(bsd::nv_field("int value", &object::int_value)
 			>> bsd::nv_field("string value", &object::string_value)
-			>> bsd::nv_field("array value", &object::array_value);
+			>> bsd::nv_field("array value", &object::array_value));
 	}
 };
 

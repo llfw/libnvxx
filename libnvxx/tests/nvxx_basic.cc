@@ -385,7 +385,7 @@ TEST_CASE(nvxx_add_bool_contig_range)
 
 // a literal operator to create std::uint64_ts
 constexpr std::uint64_t operator"" _u64(unsigned long long v) {
-	return static_cast<std::uint64_t>(v);
+	return (static_cast<std::uint64_t>(v));
 }
 
 TEST_CASE(nvxx_add_number)
