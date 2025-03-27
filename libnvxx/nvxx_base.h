@@ -161,6 +161,11 @@ struct __const_nv_list : virtual __nv_list_base {
 	 */
 	[[nodiscard]] bool exists(std::string_view __key) const;
 
+	/*
+	 * If a key of the given type with the given name exists, return true.
+	 */
+	[[nodiscard]] bool exists_type(std::string_view __key, int type) const;
+
 	// TODO: exists_type()
 
 	/* exists */

@@ -74,6 +74,12 @@ __const_nv_list::exists(std::string_view key) const
 }
 
 bool
+__const_nv_list::exists_type(std::string_view key, int type) const
+{
+	return ::nvlist_exists_type(__m_nv, std::string(key).c_str(), type);
+}
+
+bool
 __const_nv_list::empty() const noexcept
 {
 	return ::nvlist_empty(__m_nv);

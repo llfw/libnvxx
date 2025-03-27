@@ -66,6 +66,7 @@ struct const_nv_list : <unspecified> {
 	void send(int fd) const;
 
 	bool exists(std::string_view key) const;
+	bool exists_type(std::string_view key, int) const;
 	bool exists_null(std::string_view key) const;
 	bool exists_bool(std::string_view key) const;
 	bool exists_number(std::string_view key) const;
@@ -360,6 +361,13 @@ member function returns
 .Dv true
 if a key by the given name exists, otherwise
 .Dv false .
+.Pp
+The
+.Fn exists_type
+member function returns
+.Dv true
+if a key by the given name exists with the specified type, which should be one
+of the type constants defined in <sys/nv.h>.
 .Pp
 The 
 .Fn exists_null ,

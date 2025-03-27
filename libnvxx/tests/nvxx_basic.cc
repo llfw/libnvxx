@@ -47,6 +47,35 @@ TEST_CASE(nvxx_const_ctor_error)
 }
 
 /*
+ * exists(_type)
+ */
+
+TEST_CASE(nvxx_exists)
+{
+	using namespace std::literals;
+	auto key = "test number"sv;
+	auto value = 42u;
+
+	auto nvl = bsd::nv_list{};
+	nvl.add_number(key, value);
+	ATF_REQUIRE_EQ(true, nvl.exists(key));
+	ATF_REQUIRE_EQ(false, nvl.exists("nonesuch"));
+}
+
+TEST_CASE(nvxx_exists_type)
+{
+	using namespace std::literals;
+	auto key = "test number"sv;
+	auto value = 42u;
+
+	auto nvl = bsd::nv_list{};
+	nvl.add_number(key, value);
+	ATF_REQUIRE_EQ(true, nvl.exists_type(key, NV_TYPE_NUMBER));
+	ATF_REQUIRE_EQ(false, nvl.exists_type(key, NV_TYPE_STRING));
+	ATF_REQUIRE_EQ(false, nvl.exists_type("nonesuch", NV_TYPE_NUMBER));
+}
+
+/*
  * test the NV_FLAG_IGNORE_CASE flag.
  */
 
@@ -974,6 +1003,9 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_ctor_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_const_ctor_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_ignore_case);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_exists);
+	ATF_ADD_TEST_CASE(tcs, nvxx_exists_type);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_null);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_null_error);
