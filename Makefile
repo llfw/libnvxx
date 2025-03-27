@@ -1,4 +1,4 @@
-# SPDX-License-Identifier Unlicense OR MIT
+# SPDX-License-Identifier: Unlicense OR MIT
 # Refer to the file 'LICENSE' in the nvxx distribution for license terms.
 
 PREFIX?=	/usr/local
