@@ -32,7 +32,7 @@ TEST_CASE(nv_encoder_bool)
 
 	nv_encoder<bool>{}.encode(nvl, "test", v);
 
-	auto v2 = nv_decoder<bool>{}.decode(nvl, "test");
+	auto v2 = nv_encoder<bool>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(v, v2);
 }
 
@@ -43,7 +43,7 @@ TEST_CASE(nv_encoder_bool_vector)
 
 	nv_encoder<std::vector<bool>>{}.encode(nvl, "test", v);
 
-	auto v2 = nv_decoder<std::vector<bool>>{}.decode(nvl, "test");
+	auto v2 = nv_encoder<std::vector<bool>>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(true, std::ranges::equal(v, v2));
 }
 
@@ -58,7 +58,7 @@ TEST_CASE(nv_encoder_uint64)
 
 	nv_encoder<std::uint64_t>{}.encode(nvl, "test", v);
 
-	auto v2 = nv_decoder<std::uint64_t>{}.decode(nvl, "test");
+	auto v2 = nv_encoder<std::uint64_t>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(v, v2);
 }
 
@@ -69,7 +69,7 @@ TEST_CASE(nv_encoder_uint64_vector)
 
 	nv_encoder<std::vector<std::uint64_t>>{}.encode(nvl, "test", v);
 
-	auto v2 = nv_decoder<std::vector<std::uint64_t>>{}.decode(nvl, "test");
+	auto v2 = nv_encoder<std::vector<std::uint64_t>>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(true, std::ranges::equal(v, v2));
 }
 
@@ -84,7 +84,7 @@ TEST_CASE(nv_encoder_string)
 
 	nv_encoder<std::string>{}.encode(nvl, "test", v);
 
-	auto v2 = nv_decoder<std::string>{}.decode(nvl, "test");
+	auto v2 = nv_encoder<std::string>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(v, v2);
 }
 
@@ -95,7 +95,7 @@ TEST_CASE(nv_encoder_string_vector)
 
 	nv_encoder<std::vector<std::string>>{}.encode(nvl, "test", v);
 
-	auto v2 = nv_decoder<std::vector<std::string>>{}.decode(nvl, "test");
+	auto v2 = nv_encoder<std::vector<std::string>>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(true, std::ranges::equal(v, v2));
 }
 
@@ -109,7 +109,7 @@ TEST_CASE(nv_encoder_string_view)
 	auto nvl = nv_list{};
 
 	nv_encoder<std::string_view>{}.encode(nvl, "test", v);
-	auto v2 = nv_decoder<std::string_view>{}.decode(nvl, "test");
+	auto v2 = nv_encoder<std::string_view>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(v, v2);
 }
 
@@ -120,7 +120,7 @@ TEST_CASE(nv_encoder_string_view_vector)
 
 	nv_encoder<std::vector<std::string_view>>{}.encode(nvl, "test", v);
 
-	auto v2 = nv_decoder<std::vector<std::string_view>>{}
+	auto v2 = nv_encoder<std::vector<std::string_view>>{}
 			.decode(nvl, "test");
 	ATF_REQUIRE_EQ(true, std::ranges::equal(v, v2));
 }
@@ -136,7 +136,7 @@ TEST_CASE(nv_encoder_nv_list)
 	auto nvl = nv_list{};
 
 	nv_encoder<nv_list>{}.encode(nvl, "test", v);
-	auto v2 = nv_decoder<nv_list>{}.decode(nvl, "test");
+	auto v2 = nv_encoder<nv_list>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(v.get_number("int"), v2.get_number("int"));
 }
 
@@ -151,7 +151,7 @@ TEST_CASE(nv_encoder_const_nv_list)
 	auto nvl = nv_list{};
 
 	nv_encoder<const_nv_list>{}.encode(nvl, "test", const_nv_list(v));
-	auto v2 = nv_decoder<const_nv_list>{}.decode(nvl, "test");
+	auto v2 = nv_encoder<const_nv_list>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(v.get_number("int"), v2.get_number("int"));
 }
 
@@ -166,12 +166,12 @@ TEST_CASE(nv_encoder_optional)
 
 	nv_encoder<std::optional<std::uint64_t>>{}.encode(nvl, "test", v);
 
-	auto v2 = nv_decoder<
+	auto v2 = nv_encoder<
 		std::optional<std::uint64_t>>{}.decode(nvl, "test");
 	ATF_REQUIRE_EQ(true, v2.has_value());
 	ATF_REQUIRE_EQ(*v, *v2);
 
-	v2 = nv_decoder<std::optional<std::uint64_t>>{}.decode(nvl, "nonesuch");
+	v2 = nv_encoder<std::optional<std::uint64_t>>{}.decode(nvl, "nonesuch");
 	ATF_REQUIRE_EQ(false, v2.has_value());
 }
 
@@ -233,6 +233,41 @@ TEST_CASE(nv_deserialize_bad_literal)
 			  bsd::nv_deserialize(nvl, obj, test_schema));
 }
 
+struct object1 {
+	std::uint64_t value{};
+};
+
+template<>
+struct bsd::nv_schema<object1> {
+	auto get() {
+		return bsd::nv_field("value", &object1::value);
+	}
+};
+
+struct object2 {
+	std::uint64_t value2{};
+	object1 obj;
+};
+
+template<>
+struct bsd::nv_schema<object2> {
+	auto get() {
+		return bsd::nv_field("value2", &object2::value2)
+			>> bsd::nv_object("obj", &object2::obj);
+	}
+};
+
+TEST_CASE(nv_nested_serialize)
+{
+	auto obj = object2{42, {666}};
+	auto nvl = bsd::nv_serialize(obj);
+
+	auto obj2 = object2{};
+	bsd::nv_deserialize(nvl, obj2);
+	ATF_REQUIRE_EQ(obj.value2, obj2.value2);
+	ATF_REQUIRE_EQ(obj.obj.value, obj2.obj.value);
+}
+
 ATF_INIT_TEST_CASES(tcs)
 {
 	ATF_ADD_TEST_CASE(tcs, nv_encoder_bool);
@@ -252,4 +287,5 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nv_serialize);
 	ATF_ADD_TEST_CASE(tcs, nv_serialize_literal);
 	ATF_ADD_TEST_CASE(tcs, nv_deserialize_bad_literal);
+	ATF_ADD_TEST_CASE(tcs, nv_nested_serialize);
 }

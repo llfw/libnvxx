@@ -16,8 +16,7 @@ INCS=		nvxx.h			\
 SRCS=		nvxx.cc			\
 		nv_list.cc		\
 		const_nv_list.cc	\
-		nvxx_iterator.cc	\
-		nvxx_serialize.cc
+		nvxx_iterator.cc
 CXXSTD=		c++23
 CXXFLAGS+=	-W -Wall -Wextra -Werror
 LDADD=		-lnv

@@ -53,31 +53,27 @@ concept __push_back_container_of =
 
 template<typename T>
 struct nv_encoder;
-template<typename T>
-struct nv_decoder;
 
 /* bool */
 
 template<>
 struct nv_encoder<bool> {
-	void encode(nv_list &, std::string_view, bool);
+	void encode(nv_list &__nvl, std::string_view __key, bool __value) {
+		__nvl.add_bool(__key, __value);
+	}
+
+	auto decode(const_nv_list const &__nvl, std::string_view __key) -> bool {
+		return (__nvl.get_bool(__key));
+	}
 };
 
-template<__detail::__range_of<bool> _R>
-struct nv_encoder<_R> {
+template<__detail::__from_range_container_of<bool> _C>
+struct nv_encoder<_C> {
 	template<typename _U>
 	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
 		__nvl.add_bool_range(__key, std::forward<_U>(__range));
 	}
-};
 
-template<>
-struct nv_decoder<bool> {
-	auto decode(const_nv_list const &, std::string_view) -> bool;
-};
-
-template<__detail::__from_range_container_of<bool> _C>
-struct nv_decoder<_C> {
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
 		return (_C(std::from_range, __nvl.get_bool_array(__key)));
 	}
@@ -87,24 +83,25 @@ struct nv_decoder<_C> {
 
 template<>
 struct nv_encoder<std::uint64_t> {
-	void encode(nv_list &, std::string_view, std::uint64_t);
+	void encode(nv_list &__nvl,
+		    std::string_view __key,
+		    std::uint64_t __value) {
+		__nvl.add_number(__key, __value);
+	}
+
+	std::uint64_t decode(const_nv_list const &__nvl,
+			     std::string_view __key) {
+		return __nvl.get_number(__key);
+	}
 };
 
-template<__detail::__range_of<std::uint64_t> _R>
-struct nv_encoder<_R> {
+template<__detail::__from_range_container_of<std::uint64_t> _C>
+struct nv_encoder<_C> {
 	template<typename _U>
 	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
 		__nvl.add_number_range(__key, std::forward<_U>(__range));
 	}
-};
 
-template<>
-struct nv_decoder<std::uint64_t> {
-	auto decode(const_nv_list const &, std::string_view) -> std::uint64_t;
-};
-
-template<__detail::__from_range_container_of<std::uint64_t> _C>
-struct nv_decoder<_C> {
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
 		return (_C(std::from_range, __nvl.get_number_array(__key)));
 	}
@@ -114,11 +111,20 @@ struct nv_decoder<_C> {
 
 template<>
 struct nv_encoder<std::string> {
-	void encode(nv_list &, std::string_view, std::string const &);
+	void encode(nv_list &__nvl,
+		    std::string_view __key,
+		    std::string const &__value) {
+		__nvl.add_string(__key, __value);
+	}
+
+	std::string decode(const_nv_list const &__nvl,
+			   std::string_view __key) {
+		return std::string(__nvl.get_string(__key));
+	}
 };
 
-template<__detail::__range_of<std::string> _R>
-struct nv_encoder<_R> {
+template<__detail::__from_range_container_of<std::string> _C>
+struct nv_encoder<_C> {
 	template<typename _U>
 	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
 		__nvl.add_string_range(__key,
@@ -126,21 +132,14 @@ struct nv_encoder<_R> {
 			       return (std::string_view(__s));
 		       }));
 	}
-};
 
-template<>
-struct nv_decoder<std::string> {
-	auto decode(const_nv_list const &, std::string_view) -> std::string;
-};
-
-template<__detail::__from_range_container_of<std::string> _C>
-struct nv_decoder<_C> {
-	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return (_C(std::from_range,
+	_C decode(const_nv_list const &__nvl, std::string_view __key) {
+		auto __strings =
 			  __nvl.get_string_array(__key)
 			  | std::views::transform([] (auto const &__s) {
 				  return std::string(__s);
-			  })));
+			  });
+		return {std::from_range, __strings};
 	}
 };
 
@@ -148,27 +147,27 @@ struct nv_decoder<_C> {
 
 template<>
 struct nv_encoder<std::string_view> {
-	void encode(nv_list &, std::string_view, std::string_view);
+	void encode(nv_list &__nvl,
+		    std::string_view __key,
+		    std::string_view __value) {
+		__nvl.add_string(__key, __value);
+	}
+
+	std::string_view decode(const_nv_list const &__nvl,
+				std::string_view __key) {
+		return __nvl.get_string(__key);
+	}
 };
 
-template<__detail::__range_of<std::string_view> _R>
-struct nv_encoder<_R> {
+template<__detail::__from_range_container_of<std::string_view> _C>
+struct nv_encoder<_C> {
 	template<typename _U>
 	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
 		__nvl.add_string_range(__key, std::forward<_U>(__range));
 	}
-};
 
-template<>
-struct nv_decoder<std::string_view> {
-	auto decode(const_nv_list const &, std::string_view)
-		-> std::string_view;
-};
-
-template<__detail::__from_range_container_of<std::string_view> _C>
-struct nv_decoder<_C> {
-	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return (_C(std::from_range, __nvl.get_string_array(__key)));
+	_C decode(const_nv_list const &__nvl, std::string_view __key) {
+		return {std::from_range, __nvl.get_string_array(__key)};
 	}
 };
 
@@ -176,32 +175,33 @@ struct nv_decoder<_C> {
 
 template<>
 struct nv_encoder<nv_list> {
-	void encode(nv_list &, std::string_view, nv_list const &);
+	void encode(nv_list &__nvl,
+		    std::string_view __key,
+		    nv_list const &__value) {
+		__nvl.add_nvlist(__key, __value);
+	}
+
+	nv_list decode(const_nv_list const &__nvl, std::string_view __key) {
+		return (nv_list(__nvl.get_nvlist(__key)));
+	}
 };
 
+template<__detail::__from_range_container_of<nv_list> _C>
+struct nv_encoder<_C> {
 #ifdef notyet // XXX: implement add_nvlist_range()
-template<__detail::__range_of<nv_list> _R>
-struct nv_encoder<_R> {
 	template<typename _U>
 	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
 		__nvl.add_nvlist_range(__key, std::forward<_U>(__range));
 	}
-};
 #endif
 
-template<>
-struct nv_decoder<nv_list> {
-	auto decode(const_nv_list const &, std::string_view) -> nv_list;
-};
-
-template<__detail::__from_range_container_of<nv_list> _C>
-struct nv_decoder<_C> {
-	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return (_C(std::from_range,
+	_C decode(const_nv_list const &__nvl, std::string_view __key) {
+		auto __nvls = 
 			  __nvl.get_nvlist_array(__key)
 			  | std::views::transform([] (auto const &__s) {
 				  return nv_list(__s);
-			  })));
+			  });
+		return {std::from_range, __nvls};
 	}
 };
 
@@ -209,28 +209,29 @@ struct nv_decoder<_C> {
 
 template<>
 struct nv_encoder<const_nv_list> {
-	void encode(nv_list &, std::string_view, const_nv_list const &);
+	void encode(nv_list &__nvl,
+		    std::string_view __key,
+		    const_nv_list const &__value) {
+		__nvl.add_nvlist(__key, __value);
+	}
+
+	const_nv_list decode(const_nv_list const &__nvl,
+			     std::string_view __key) {
+		return __nvl.get_nvlist(__key);
+	}
 };
 
+template<__detail::__from_range_container_of<const_nv_list> _C>
+struct nv_encoder<_C> {
 #ifdef notyet // XXX: implement add_nvlist_range()
-template<__detail::__range_of<const_nv_list> _R>
-struct nv_encoder<_R> {
 	template<typename _U>
 	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
 		__nvl.add_nvlist_range(__key, std::forward<_U>(__range));
 	}
-};
 #endif
 
-template<>
-struct nv_decoder<const_nv_list> {
-	auto decode(const_nv_list const &, std::string_view) -> const_nv_list;
-};
-
-template<__detail::__from_range_container_of<const_nv_list> _C>
-struct nv_decoder<_C> {
-	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
-		return (_C(std::from_range, __nvl.get_nvlist_array(__key)));
+	_C decode(const_nv_list const &__nvl, std::string_view __key) {
+		return {std::from_range, __nvl.get_nvlist_array(__key)};
 	}
 };
 
@@ -238,20 +239,17 @@ struct nv_decoder<_C> {
 
 template<typename _T>
 struct nv_encoder<std::optional<_T>> {
-	auto encode(nv_list &__nvl,
+	void encode(nv_list &__nvl,
 		    std::string_view __key,
 		    std::optional<_T> const &__value) {
 		if (__value)
 			nv_encoder<_T>{}.encode(__nvl, __key, *__value);
 	}
-};
 
-template<typename _T>
-struct nv_decoder<std::optional<_T>> {
-	auto decode(const_nv_list const &__nvl,
-		    std::string_view __key) -> std::optional<_T> {
+	std::optional<_T> decode(const_nv_list const &__nvl,
+				 std::string_view __key) {
 		if (__nvl.exists(__key))
-			return {nv_decoder<_T>{}.decode(__nvl, __key)};
+			return {nv_encoder<_T>{}.decode(__nvl, __key)};
 		else
 			return {};
 	}
@@ -275,6 +273,9 @@ concept __serializer =
 
 } // namespace detail
 
+template<typename _T>
+struct nv_schema;
+
 template<typename _Object, typename _Member>
 struct nv_field : __detail::__serializer_tag {
 	nv_field(std::string __name, _Member _Object::* __ptr)
@@ -290,7 +291,7 @@ struct nv_field : __detail::__serializer_tag {
 	}
 
 	auto deserialize(const_nv_list const &__nvl, _Object &__object) const {
-		__object.*__field_ptr = nv_decoder<_Member>{}
+		__object.*__field_ptr = nv_encoder<_Member>{}
 						.decode(__nvl, __field_name);
 	}
 
@@ -302,6 +303,31 @@ private:
 template<typename _Object, typename _Member>
 nv_field(std::string_view, _Member _Object::*)
 	-> nv_field<std::decay_t<_Object>, _Member>;
+
+template<typename _Object, typename _Member>
+struct nv_object : __detail::__serializer_tag {
+	nv_object(std::string __name, _Member _Object::* __ptr)
+		: __field_name(__name)
+		, __field_ptr(__ptr)
+	{
+	}
+
+	auto serialize(nv_list &__nvl, _Object const &__object) const {
+		using __schema_type = nv_schema<_Member>;
+		auto __schema = __schema_type{}.get();
+		__schema.serialize(__nvl, __object.*__field_ptr);
+	}
+
+	auto deserialize(const_nv_list const &__nvl, _Object &__object) const {
+		using __schema_type = nv_schema<_Member>;
+		auto __schema = __schema_type{}.get();
+		__schema.deserialize(__nvl, __object.*__field_ptr);
+	}
+
+private:
+	std::string __field_name;
+	_Member _Object::* __field_ptr;
+};
 
 template<typename _Member>
 struct nv_literal;
@@ -370,9 +396,6 @@ auto operator>> (__detail::__serializer auto const &__f1,
 {
 	return (__detail::__field_sequence(__f1, __f2));
 }
-
-template<typename _T>
-struct nv_schema;
 
 nv_list
 nv_serialize(auto &&__o, __detail::__serializer auto const &__schema)
