@@ -53,62 +53,64 @@ using container-type = ...;
 
 // exposition only
 struct const_nv_list : <unspecified> {
-	const_nv_list();
-	explicit const_nv_list(::nvlist_t const *);
-	const_nv_list(const_nv_list const &);
+.Bd -literal -offset indent
+const_nv_list();
+explicit const_nv_list(::nvlist_t const *);
+const_nv_list(const_nv_list const &);
 
-	const_nv_list &operator=(const_nv_list const &);
-	const_nv_list &operator=(nv_list const &);
+const_nv_list &operator=(const_nv_list const &);
+const_nv_list &operator=(nv_list const &);
 
-	::nvlist_t const *ptr() const;
+::nvlist_t const *ptr() const;
 
-	void dump(int fd) const;
-	void fdump(std::FILE *fp) const;
+void dump(int fd) const;
+void fdump(std::FILE *fp) const;
 
-	std::size_t packed_size() const;
-	std::vector<std::byte> pack() const;
+std::size_t packed_size() const;
+std::vector<std::byte> pack() const;
 
-	std::error_code error() const;
+std::error_code error() const;
 
-	explicit operator bool() const;
+explicit operator bool() const;
 
-	bool empty() const;
-	int flags() const;
-	bool in_array() const;
+bool empty() const;
+int flags() const;
+bool in_array() const;
 
-	void send(int fd) const;
+void send(int fd) const;
 
-	bool exists(std::string_view key) const;
-	bool exists_type(std::string_view key, int) const;
-	bool exists_null(std::string_view key) const;
-	bool exists_bool(std::string_view key) const;
-	bool exists_number(std::string_view key) const;
-	bool exists_string(std::string_view key) const;
-	bool exists_binary(std::string_view key) const;
-	bool exists_nvlist(std::string_view key) const;
-	bool exists_descriptor(std::string_view key) const;
+bool exists(std::string_view key) const;
+bool exists_type(std::string_view key, int) const;
+bool exists_null(std::string_view key) const;
+bool exists_bool(std::string_view key) const;
+bool exists_number(std::string_view key) const;
+bool exists_string(std::string_view key) const;
+bool exists_binary(std::string_view key) const;
+bool exists_nvlist(std::string_view key) const;
+bool exists_descriptor(std::string_view key) const;
 
-	auto get_bool(std::string_view key) const -> bool;
-	auto get_number(std::string_view key) const -> std::uint64_t;
-	auto get_string(std::string_view key) const -> std::string_view;
-	auto get_descriptor(std::string_view key) const -> int;
-	auto get_nvlist(std::string_view key) const -> const_nv_list;
+auto get_bool(std::string_view key) const -> bool;
+auto get_number(std::string_view key) const -> std::uint64_t;
+auto get_string(std::string_view key) const -> std::string_view;
+auto get_descriptor(std::string_view key) const -> int;
+auto get_nvlist(std::string_view key) const -> const_nv_list;
 
-	// exposition only
-	auto get_binary(std::string_view key) const -> container-type<std::byte const>;
+// exposition only
+auto get_binary(std::string_view key) const -> container-type<std::byte const>;
 
-	bool exists_bool_array(std::string_view key) const;
-	bool exists_number_array(std::string_view key) const;
-	bool exists_string_array(std::string_view key) const;
-	bool exists_descriptor_array(std::string_view key) const;
-	bool exists_nvlist_array(std::string_view key) const;
+bool exists_bool_array(std::string_view key) const;
+bool exists_number_array(std::string_view key) const;
+bool exists_string_array(std::string_view key) const;
+bool exists_descriptor_array(std::string_view key) const;
+bool exists_nvlist_array(std::string_view key) const;
 
-	// exposition only
-	auto get_bool_array(std::string_view key) const -> container-type<bool const>;
-	auto get_number_array(std::string_view key) const -> container-type<std::uint64_t const>;
-	auto get_string_array(std::string_view key) const -> container-type<std::string_view>;
-	auto get_descriptor_array(std::string_view key) const -> container-type<int const>;
-	auto get_nvlist_array(std::string_view key) const -> container-type<const_nv_list>;
+// exposition only
+auto get_bool_array(std::string_view key) const -> container-type<bool const>;
+auto get_number_array(std::string_view key) const -> container-type<std::uint64_t const>;
+auto get_string_array(std::string_view key) const -> container-type<std::string_view>;
+auto get_descriptor_array(std::string_view key) const -> container-type<int const>;
+auto get_nvlist_array(std::string_view key) const -> container-type<const_nv_list>;
+.Ed
 };
 
 // exposition only
@@ -226,12 +228,16 @@ using nv_list_pair_t = std::pair<nv_list_key_t, nv_list_value_t>;
 
 struct nv_list_iterator;
 
-nv_list_iterator begin(const_nv_list const &);
-nv_list_iterator begin(nv_list const &);
+.Ft nv_list_iterator
+.Fn begin "const_nv_list const &"
+.Ft nv_list_iterator
+.Fn begin "nv_list const &"
 
 // exposition only
-unspecified-type end(const_nv_list const &);
-unspecified-type end(nv_list const &);
+.Ft unspecified-type
+.Fn end "const_nv_list const &"
+.Ft unspecified-type
+.Fn end "nv_list const &"
 
 // serialization interface
 
@@ -254,11 +260,15 @@ struct nv_object {
 	nv_object(std::string key, Member Object::* ptr);
 };
 
-nv_list nv_serialize(auto &&object);
-nv_list nv_serialize(auto &&object, auto const &schema);
+.Ft nv_list
+.Fn nv_serialize "auto &&object"
+.Ft nv_list
+.Fn nv_serialize "auto &&object" "auto const &schema"
 
-void nv_deserialize(const_nv_list const &, auto &&object);
-void nv_deserialize(const_nv_list const &, auto &&object, auto const &schema);
+.Ft void
+.Fn nv_deserialize "const_nv_list const &" "auto &&object"
+.Ft void
+.Fn nv_deserialize "const_nv_list const &" "auto &&object" "auto const &schema"
 
 } // namespace bsd
 .Ed
