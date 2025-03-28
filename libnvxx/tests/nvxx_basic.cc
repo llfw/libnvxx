@@ -289,7 +289,7 @@ TEST_CASE(nvxx_add_bool_array)
 	auto data = std::array<bool, 2>{true, false};
 
 	auto nvl = bsd::nv_list();
-	nvl.add_bool_array(key, std::span(data));
+	nvl.add_bool_array(key, data);
 
 	ATF_REQUIRE_EQ(true, nvl.exists(key));
 	ATF_REQUIRE_EQ(true, nvl.exists_bool_array(key));
@@ -365,10 +365,10 @@ TEST_CASE(nvxx_add_bool_contig_range)
 	using namespace std::literals;
 	auto constexpr key = "test_bool"sv;
 
-	auto data = std::vector{true, false};
+	auto data = std::array<bool, 2>{true, false};
 
 	auto nvl = bsd::nv_list();
-	nvl.add_bool_range(key, data);
+	nvl.add_bool_array(key, data);
 
 	ATF_REQUIRE_EQ(true, nvl.exists(key));
 	ATF_REQUIRE_EQ(true, nvl.exists_bool_array(key));
@@ -606,7 +606,7 @@ TEST_CASE(nvxx_add_number_contig_range)
 				std::ranges::iota_view{0_u64, size});
 
 	auto nvl = bsd::nv_list();
-	nvl.add_number_range(key, data);
+	nvl.add_number_array(key, data);
 
 	ATF_REQUIRE_EQ(true, nvl.exists(key));
 	ATF_REQUIRE_EQ(true, nvl.exists_number_array(key));
@@ -810,7 +810,7 @@ TEST_CASE(nvxx_add_string_contig_range)
 	auto data = std::vector<std::string_view>{"one"sv, "two"sv};
 
 	auto nvl = bsd::nv_list();
-	nvl.add_string_range(key, data);
+	nvl.add_string_array(key, data);
 
 	ATF_REQUIRE_EQ(true, nvl.exists(key));
 	ATF_REQUIRE_EQ(true, nvl.exists_string_array(key));

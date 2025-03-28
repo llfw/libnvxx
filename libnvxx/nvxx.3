@@ -139,6 +139,7 @@ struct nv_list : <unspecified> {
 	void add_descriptor(std::string_view key, int);
 	void add_nvlist(std::string_view key, const_nv_list const &);
 	void add_binary(std::string_view key, std::span<std::byte const>);
+	void add_binary_range(std::string_view key, std::ranges::range auto &&);
 
 	void move_string(std::string_view key, char *);
 	void move_descriptor(std::string_view key, int);
@@ -187,22 +188,11 @@ struct nv_list : <unspecified> {
 	void add_nvlist_array(std::string_view key, std::span<const_nv_list const>);
 	void add_nvlist_array(std::string_view key, std::span<nv_list const>);
 
-	// exposition only
-
-	template<std::ranges::range Range>
-	void add_bool_range(std::string_view key, Range &&);
-
-	template<std::ranges::range Range>
-	void add_number_range(std::string_view key, Range &&);
-
-	template<std::ranges::range Range>
-	void add_binary_range(std::string_view key, Range &&);
-
-	template<std::ranges::range Range>
-	void add_string_range(std::string_view key, _Range &&);
-
-	template<std::ranges::range Range>
-	void add_descriptor_range(std::string_view key, _Range &&);
+	void add_bool_range(std::string_view key, std::ranges::range auto &&);
+	void add_number_range(std::string_view key, std::ranges::range auto &&);
+	void add_string_range(std::string_view key, std::ranges::range auto &&);
+	void add_descriptor_range(std::string_view key, std::ranges::range auto &&);
+	void add_nvlist_range(std::string_view key, std::ranges::range auto &&);
 
 	// exposition only
 	auto take_bool_array(std::string_view key) -> container-type<bool>;

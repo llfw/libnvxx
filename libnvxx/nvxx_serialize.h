@@ -45,6 +45,16 @@ concept __push_back_container_of =
 		__c.push_back(__value);
 	};
 
+struct __serializer_tag {
+	using __serializer_tag_t = int;
+};
+
+template<typename _T>
+concept __serializer =
+	requires(_T __t) {
+		typename _T::__serializer_tag_t;
+	};
+
 } // namespace __detail
 
 /*
@@ -69,9 +79,9 @@ struct nv_encoder<bool> {
 
 template<__detail::__from_range_container_of<bool> _C>
 struct nv_encoder<_C> {
-	template<typename _U>
-	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
-		__nvl.add_bool_range(__key, std::forward<_U>(__range));
+	void encode(nv_list &__nvl, std::string_view __key, auto &&__range) {
+		__nvl.add_bool_range(__key,
+				     std::forward<decltype(__range)>(__range));
 	}
 
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
@@ -97,9 +107,9 @@ struct nv_encoder<std::uint64_t> {
 
 template<__detail::__from_range_container_of<std::uint64_t> _C>
 struct nv_encoder<_C> {
-	template<typename _U>
-	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
-		__nvl.add_number_range(__key, std::forward<_U>(__range));
+	void encode(nv_list &__nvl, std::string_view __key, auto &&__range) {
+		__nvl.add_number_range(
+			__key, std::forward<decltype(__range)>(__range));
 	}
 
 	auto decode(const_nv_list const &__nvl, std::string_view __key) -> _C {
@@ -125,8 +135,7 @@ struct nv_encoder<std::string> {
 
 template<__detail::__from_range_container_of<std::string> _C>
 struct nv_encoder<_C> {
-	template<typename _U>
-	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
+	void encode(nv_list &__nvl, std::string_view __key, auto &&__range) {
 		__nvl.add_string_range(__key,
 		       __range | std::views::transform([] (auto const &__s) {
 			       return (std::string_view(__s));
@@ -161,9 +170,9 @@ struct nv_encoder<std::string_view> {
 
 template<__detail::__from_range_container_of<std::string_view> _C>
 struct nv_encoder<_C> {
-	template<typename _U>
-	void encode(nv_list &__nvl, std::string_view __key, _U &&__range) {
-		__nvl.add_string_range(__key, std::forward<_U>(__range));
+	void encode(nv_list &__nvl, std::string_view __key, auto &&__range) {
+		__nvl.add_string_range(
+			__key, std::forward<decltype(__range)>(__range));
 	}
 
 	_C decode(const_nv_list const &__nvl, std::string_view __key) {
@@ -259,20 +268,6 @@ struct nv_encoder<std::optional<_T>> {
  * object (de)serialization
  */
 
-namespace __detail {
-
-struct __serializer_tag {
-	using __serializer_tag_t = int;
-};
-
-template<typename _T>
-concept __serializer =
-	requires(_T __t) {
-		typename _T::__serializer_tag_t;
-	};
-
-} // namespace detail
-
 template<typename _T>
 struct nv_schema;
 
@@ -340,13 +335,11 @@ struct nv_literal<std::string_view> : __detail::__serializer_tag {
 	{
 	}
 
-	template<typename _Object>
-	auto serialize(nv_list &__nvl, _Object const &) const {
+	auto serialize(nv_list &__nvl, auto const &) const {
 		__nvl.add_string(__field_name, __field_value);
 	}
 
-	template<typename _Object>
-	auto deserialize(const_nv_list const &__nvl, _Object &) const {
+	auto deserialize(const_nv_list const &__nvl, auto &) const {
 		auto __value = __nvl.get_string(__field_name);
 		// TODO: possibly we could have a specific exception for this
 		if (__value != __field_value)
@@ -372,14 +365,12 @@ struct __field_sequence : __detail::__serializer_tag {
 	{
 	}
 
-	template<typename _Object>
-	auto serialize(nv_list &__nvl, _Object const &__object) const {
+	auto serialize(nv_list &__nvl, auto const &__object) const {
 		__first.serialize(__nvl, __object);
 		__second.serialize(__nvl, __object);
 	}
 
-	template<typename _Object>
-	auto deserialize(const_nv_list const &__nvl, _Object &__object) const {
+	auto deserialize(const_nv_list const &__nvl, auto &__object) const {
 		__first.deserialize(__nvl, __object);
 		__second.deserialize(__nvl, __object);
 	}
@@ -405,13 +396,12 @@ nv_serialize(auto &&__o, __detail::__serializer auto const &__schema)
 	return (__nvl);
 }
 
-template<typename _Object>
 nv_list
-nv_serialize(_Object &&__o)
+nv_serialize(auto &&__o)
 {
 	using __schema_type = nv_schema<std::remove_cvref_t<decltype(__o)>>;
 	auto __schema = __schema_type{}.get();
-	return nv_serialize(std::forward<_Object>(__o), __schema);
+	return nv_serialize(std::forward<decltype(__o)>(__o), __schema);
 }
 
 void
@@ -422,10 +412,9 @@ nv_deserialize(const_nv_list const &__nvl,
 	__schema.deserialize(__nvl, __obj);
 }
 
-template<typename _Object>
-void nv_deserialize(const_nv_list const &__nvl, _Object &__obj)
+void nv_deserialize(const_nv_list const &__nvl, auto &__obj)
 {
-	using __schema_type = nv_schema<std::remove_cvref_t<_Object>>;
+	using __schema_type = nv_schema<std::remove_cvref_t<decltype(__obj)>>;
 	auto __schema = __schema_type{}.get();
 	nv_deserialize(__nvl, __obj, __schema);
 }

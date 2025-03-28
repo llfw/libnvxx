@@ -328,168 +328,6 @@ struct __nv_list : virtual __nv_list_base {
 	void append_string_array(std::string_view __key, std::string_view);
 	void append_nvlist_array(std::string_view __key, const_nv_list const &);
 	void append_descriptor_array(std::string_view __key, int);
-
-	/* add_bool_range */
-	template<std::ranges::contiguous_range _Range>
-		requires std::is_same_v<bool,
-			std::remove_cvref_t<
-				std::ranges::range_value_t<_Range>>>
-	void add_bool_range(std::string_view __key, _Range &&__value)
-	{
-		add_bool_array(__key, std::span(__value));
-	}
-
-	template<std::ranges::range _Range>
-		requires (!std::ranges::contiguous_range<_Range>
-			&& std::is_same_v<bool,
-				std::remove_cvref_t<
-					std::ranges::range_value_t<_Range>>>)
-	void add_bool_range(std::string_view __key, _Range &&__value)
-	{
-		/*
-		 * since vector<bool> is not a contiguous_range,
-		 * we need to do two copies here.
-		 */
-
-		auto __v = std::vector(std::from_range, __value);
-		auto __p = std::make_unique<bool[]>(__v.size());
-		std::ranges::copy(__v, __p.get());
-		add_bool_array(__key, std::span(__p.get(), __v.size()));
-	}
-
-	/* add_number_range */
-
-	template<std::ranges::contiguous_range _Range>
-		requires std::is_same_v<std::uint64_t,
-			std::remove_cvref_t<
-				std::ranges::range_value_t<_Range>>>
-	void add_number_range(std::string_view __key, _Range &&__value)
-	{
-		add_number_array(__key, std::span(__value));
-	}
-
-	template<std::ranges::range _Range>
-		requires (
-			!std::ranges::contiguous_range<_Range>
-			&& std::is_same_v<std::uint64_t,
-				std::remove_cvref_t<
-					std::ranges::range_value_t<_Range>>>)
-	void add_number_range(std::string_view __key, _Range &&__value)
-	{
-		auto __arr = std::vector(std::from_range, __value);
-		add_number_range(__key, __arr);
-	}
-
-	/* add_descriptor_range */
-
-	template<std::ranges::contiguous_range _Range>
-		requires std::is_same_v<int,
-			std::remove_cvref_t<
-				std::ranges::range_value_t<_Range>>>
-	void add_descriptor_range(std::string_view __key, _Range &&__value)
-	{
-		add_descriptor_array(__key, std::span(__value));
-	}
-
-	template<std::ranges::range _Range>
-		requires (
-			!std::ranges::contiguous_range<_Range>
-			&& std::is_same_v<int,
-				std::remove_cvref_t<
-					std::ranges::range_value_t<_Range>>>)
-	void add_descriptor_range(std::string_view __key, _Range &&__value)
-	{
-		auto __arr = std::vector(std::from_range, __value);
-		add_descriptor_range(__key, __arr);
-	}
-
-	/* add_string_range */
-
-	template<std::ranges::contiguous_range _Range>
-		requires std::is_same_v<std::string_view,
-			std::remove_cvref_t<
-				std::ranges::range_value_t<_Range>>>
-	void add_string_range(std::string_view __key, _Range &&__value)
-	{
-		add_string_array(__key, std::span(__value));
-	}
-
-	template<std::ranges::range _Range>
-		requires (!std::ranges::contiguous_range<_Range>
-			&& std::is_same_v<std::string_view,
-				std::remove_cvref_t<
-					std::ranges::range_value_t<_Range>>>)
-	void add_string_range(std::string_view __key, _Range &&__value)
-	{
-		auto __arr = std::vector(std::from_range, __value);
-		add_string_range(__key, __arr);
-	}
-
-	/* add_binary_range */
-
-	template<std::ranges::contiguous_range _Range>
-		requires std::is_same_v<std::byte,
-			std::remove_cvref_t<
-				std::ranges::range_value_t<_Range>>>
-	void add_binary_range(std::string const &__name, _Range &&__value)
-	{
-		auto __span = std::span(__value);
-		add_binary(__name, __span);
-	}
-
-	template<std::ranges::range _Range>
-		requires (
-			!std::ranges::contiguous_range<_Range>
-			&& std::is_same_v<std::byte,
-				std::remove_cvref_t<
-					std::ranges::range_value_t<_Range>>>)
-	void add_binary_range(std::string_view __key, _Range &&__value)
-	{
-		auto __arr = std::vector(std::from_range, __value);
-		add_number_range(__key, __arr);
-	}
-
-	/* add_nvlist_range */
-
-	template<std::ranges::contiguous_range _Range>
-		requires std::is_same_v<nv_list,
-			std::remove_cvref_t<
-				std::ranges::range_value_t<_Range>>>
-	void add_nvlist_range(std::string_view __key, _Range &&__value)
-	{
-		add_nvlist_array(__key, std::span(__value));
-	}
-
-	template<std::ranges::range _Range>
-		requires (!std::ranges::contiguous_range<_Range>
-			&& std::is_same_v<nv_list,
-				std::remove_cvref_t<
-					std::ranges::range_value_t<_Range>>>)
-	void add_nvlist_range(std::string_view __key, _Range &&__value)
-	{
-		auto __arr = std::vector(std::from_range, __value);
-		add_nvlist_range(__key, __arr);
-	}
-
-	template<std::ranges::contiguous_range _Range>
-		requires std::is_same_v<const_nv_list,
-			std::remove_cvref_t<
-				std::ranges::range_value_t<_Range>>>
-	void add_nvlist_range(std::string_view __key, _Range &&__value)
-	{
-		add_nvlist_array(__key, std::span(__value));
-	}
-
-	template<std::ranges::range _Range>
-		requires (!std::ranges::contiguous_range<_Range>
-			&& std::is_same_v<const_nv_list,
-				std::remove_cvref_t<
-					std::ranges::range_value_t<_Range>>>)
-	void add_nvlist_range(std::string_view __key, _Range &&__value)
-	{
-		auto __arr = std::vector(std::from_range, __value);
-		add_nvlist_range(__key, __arr);
-	}
 };
 
 } // namespace bsd::__detail
@@ -649,6 +487,58 @@ struct nv_list final
 	[[nodiscard]] static nv_list xfer(int __fd,
 					  nv_list &&__source,
 					  int __flags);
+
+	void add_bool_range(std::string_view __key,
+			    std::ranges::range auto &&__value)
+	{
+		/*
+		 * since vector<bool> is not a contiguous_range,
+		 * we need to do two copies here.
+		 */
+
+		auto __v = std::vector<bool>(std::from_range, __value);
+		auto __p = std::make_unique<bool[]>(__v.size());
+		std::ranges::copy(__v, __p.get());
+		add_bool_array(__key, std::span(__p.get(), __v.size()));
+	}
+
+	void add_number_range(std::string_view __key,
+			      std::ranges::range auto &&__value)
+	{
+		auto __arr = std::vector<std::uint64_t>(
+					std::from_range, __value);
+		add_number_array(__key, __arr);
+	}
+
+	void add_descriptor_range(std::string_view __key,
+				  std::ranges::range auto &&__value)
+	{
+		auto __arr = std::vector<int>(std::from_range, __value);
+		add_descriptor_array(__key, __arr);
+	}
+
+	void add_string_range(std::string_view __key,
+			      std::ranges::range auto &&__value)
+	{
+		auto __arr = std::vector<std::string_view>(
+				std::from_range, __value);
+		add_string_array(__key, __arr);
+	}
+
+	void add_binary_range(std::string_view __key,
+			      std::ranges::range auto &&__value)
+	{
+		auto __arr = std::vector<std::byte>(std::from_range, __value);
+		add_binary(__key, __arr);
+	}
+
+	void add_nvlist_range(std::string_view __key,
+			      std::ranges::range auto &&__value)
+	{
+		auto __arr = std::vector<const_nv_list>(
+				std::from_range, __value);
+		add_nvlist_array(__key, __arr);
+	}
 };
 
 } // namespace bsd
