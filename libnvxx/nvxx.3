@@ -203,6 +203,63 @@ struct nv_list : <unspecified> {
 	auto take_binary(std::string_view key) -> container-type<std::byte>;
 };
 
+// range support
+
+using nv_list_key_t = std::string_view;
+
+using nv_list_value_t = std::variant<
+	nullptr_t,			/* null */
+	bool,				/* bool */
+	std::uint64_t,			/* number */
+	std::string_view,		/* string */
+	const_nv_list,			/* nvlist */
+	int,				/* descriptor */
+	std::span<std::byte const>,	/* binary */
+	std::span<bool const>,		/* bool array */
+	std::span<std::uint64_t const>,	/* number array */
+	std::vector<std::string_view>,	/* string array */
+	std::span<int const>,		/* descriptor array */
+	std::vector<const_nv_list>	/* nvlist array */
+>;
+
+using nv_list_pair_t = std::pair<nv_list_key_t, nv_list_value_t>;
+
+struct nv_list_iterator;
+
+nv_list_iterator begin(const_nv_list const &);
+nv_list_iterator begin(nv_list const &);
+
+// exposition only
+unspecified-type end(const_nv_list const &);
+unspecified-type end(nv_list const &);
+
+// serialization interface
+
+template<typename T>
+struct nv_schema;
+
+// exposition only
+struct nv_literal {
+	nv_literal(std::string key, std::string value);
+};
+
+template<typename Object, typename Member>
+struct nv_field {
+	nv_object(std::string key, Member Object::* ptr);
+};
+
+// exposition only
+template<typename Object, typename Member>
+struct nv_object {
+	nv_object(std::string key, Member Object::* ptr);
+};
+
+nv_list nv_serialize(auto &&object);
+nv_list nv_serialize(auto &&object, auto const &schema);
+
+void nv_deserialize(const_nv_list const &, auto &&object);
+void nv_deserialize(const_nv_list const &, auto &&object, auto const &schema);
+
 } // namespace bsd
 .Ed
 .Sh DESCRIPTION
@@ -425,7 +482,7 @@ member function returns
 if a key by the given name exists with the specified type, which should be one
 of the type constants defined in <sys/nv.h>.
 .Pp
-The 
+The
 .Fn exists_null ,
 .Fn exists_bool ,
 .Fn exists_number ,
@@ -437,7 +494,7 @@ The
 .Fn exists_string_array ,
 .Fn exists_nvlist_array
 and
-.Fn exists_descriptor_array 
+.Fn exists_descriptor_array
 member functions return
 .Dv true
 if a key with the given name exists in the nvlist, or otherwise
@@ -648,3 +705,93 @@ In the case of
 the nvlist takes ownership of the member descriptors and will later close them
 using
 .Xr close 2 .
+.Sh RANGE SUPPORT
+Both
+.Vt nv_list
+and
+.Vt const_nv_list
+are ranges fulfilling the requirements of
+.Vt std::ranges::forward_range .
+The list may be iterated to enumerate values of type
+.Vt nv_list_pair_t ,
+which contains the name and value of each nv_list element.
+.Pp
+Modifying an
+.Vt nv_list
+invalidates any iterators for that list and any instances of
+.Vt const_nv_list
+which refer to that list.
+.Sh SERIALIZATION INTERFACE
+The serialization interface provides a simple interface to the nvlist library
+which allows conversion between nvlists and C++ objects.
+To use the serialization interface, the object to be serialized must have a
+schema, which is typically provided by specializing
+.Vt nv_schema
+for the object type.
+The specialization should have a single member function called
+.Fn get
+which returns the schema.
+.Pp
+The schema is defined using one or more schema elements, which are joined using
+the >> operator.
+The available field types are:
+.Bl -tag -width indent
+.It Fn nv_literal name value
+A literal value.
+When serializing the object, the literal value will be added to the nvlist.
+When deserializing the object, deserialization will fail if the literal value
+is not present in the nvlist.
+.It Fn nv_field name mptr
+An object member variable containing a basic type,
+identified by its name and a pointer-to-member.
+The following types are supported:
+.Pp
+.Bl -hyphen -compact
+.It
+.Vt bool
+.It
+.Vt std::uint64_t
+.It
+.Vt std::string
+.It
+.Vt std::string_view
+.It
+.Vt nv_list
+.It
+.Vt const_nv_list
+.It
+.Vt std::optional<T>
+for any type
+.Vt T
+listed above
+.It
+a container type of any type listed above, as long as the container supports
+.Vt std::from_range
+construction.
+.El
+.It Fn nv_object name mptr
+An object member variable whose type has its own schema defined.
+This allows nested objects to be serialized.
+.El
+.Pp
+For example, a simple schema could be defined like this:
+.Bd -literal
+struct object {
+	std::uint64_t i;
+	std::string s;
+};
+
+template<> struct bsd::nv_schema<object> {
+	auto get() {
+		return bsd::nv_field("int field", &object::i)
+		    >> bsd::nv_field("string field", &object::s);
+	}
+};
+.Ed
+.Pp
+As an alternative to specializing
+.Vt nv_schema ,
+a schema may also be passed directly to
+.Fn nv_serialize
+and
+.Fn nv_deserialize .
