@@ -20,7 +20,7 @@ const_nv_list::const_nv_list() noexcept
 }
 
 // const_cast is safe here since a non-owning nvlist is never modified.
-const_nv_list::const_nv_list(::nvlist_t const *nvl)
+const_nv_list::const_nv_list(::nvlist_t const *nvl) noexcept
 	: __nv_list_base(const_cast<::nvlist_t *>(nvl),
 			 __detail::__nvlist_owning::__non_owning)
 {

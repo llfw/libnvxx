@@ -49,8 +49,14 @@ void
 __nv_list_base::__throw_if_error() const
 {
 	if (auto err = ::nvlist_error(__m_nv); err != 0)
-		throw nv_error_state(std::error_code(err,
-						     std::generic_category()));
+		throw nv_error_state(std::error_code(err, std::generic_category()));
+}
+
+void
+__nv_list_base::__throw_if_null() const
+{
+	if (__m_nv == nullptr)
+		throw std::logic_error("attempt to access a null nv_list");
 }
 
 } // namespace bsd::__detail

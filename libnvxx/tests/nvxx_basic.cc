@@ -28,24 +28,6 @@ TEST_CASE(nvxx_ctor_default)
 	auto nvl = bsd::nv_list();
 }
 
-TEST_CASE(nvxx_ctor_error)
-{
-	auto nvp = ::nvlist_create(0);
-	::nvlist_set_error(nvp, EINVAL);
-	try {
-	ATF_REQUIRE_THROW(bsd::nv_error_state,
-			  auto nvl = bsd::nv_list(nvp));
-	} catch (bsd::nv_error_state const &) {}
-}
-
-TEST_CASE(nvxx_const_ctor_error)
-{
-	auto nvp = ::nvlist_create(0);
-	::nvlist_set_error(nvp, EINVAL);
-	ATF_REQUIRE_THROW(bsd::nv_error_state,
-			  auto nvl = bsd::const_nv_list(nvp));
-}
-
 /*
  * exists(_type)
  */
@@ -1229,8 +1211,6 @@ TEST_CASE(nvxx_add_binary_range)
 ATF_INIT_TEST_CASES(tcs)
 {
 	ATF_ADD_TEST_CASE(tcs, nvxx_ctor_default);
-	ATF_ADD_TEST_CASE(tcs, nvxx_ctor_error);
-	ATF_ADD_TEST_CASE(tcs, nvxx_const_ctor_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_ignore_case);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists);

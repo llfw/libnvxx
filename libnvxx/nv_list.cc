@@ -17,12 +17,9 @@ namespace bsd {
 nv_list::nv_list(int flags)
 	: __nv_list_base(flags)
 {
-	if (__m_nv == nullptr)
-		throw std::system_error(
-			std::error_code(errno, std::system_category()));
 }
 
-nv_list::nv_list(::nvlist_t *nvl)
+nv_list::nv_list(::nvlist_t *nvl) noexcept
 	: __nv_list_base(nvl, __detail::__nvlist_owning::__owning)
 {
 }
@@ -32,8 +29,7 @@ nv_list::nv_list(const_nv_list const &other)
 			 __detail::__nvlist_owning::__owning)
 {
 	if (__m_nv == nullptr)
-		throw std::system_error(
-			std::error_code(errno, std::system_category()));
+		throw std::system_error(std::error_code(errno, std::system_category()));
 }
 
 nv_list::nv_list(nv_list const &other)
@@ -41,8 +37,7 @@ nv_list::nv_list(nv_list const &other)
 			 __detail::__nvlist_owning::__owning)
 {
 	if (__m_nv == nullptr)
-		throw std::system_error(
-			std::error_code(errno, std::system_category()));
+		throw std::system_error(std::error_code(errno, std::system_category()));
 }
 
 nv_list::nv_list(nv_list &&other) noexcept
@@ -57,9 +52,7 @@ nv_list::operator=(nv_list const &other)
 	if (this != &other) {
 		auto *clone = nvlist_clone(other.__m_nv);
 		if (clone == nullptr)
-			throw std::system_error(
-				std::error_code(errno,
-						std::system_category()));
+			throw std::system_error(std::error_code(errno, std::system_category()));
 		__free_nv();
 		__m_nv = clone;
 		__m_owning = __detail::__nvlist_owning::__owning;
@@ -98,7 +91,7 @@ nv_list::release() &&
 }
 
 nv_list
-nv_list::unpack(std::span<std::byte> data, int flags)
+nv_list::unpack(std::span<std::byte const> data, int flags)
 {
 	if (auto nv = ::nvlist_unpack(std::ranges::data(data),
 				      std::ranges::size(data),

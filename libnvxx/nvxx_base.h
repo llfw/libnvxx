@@ -34,8 +34,7 @@ struct nv_error : std::runtime_error {
  */
 struct nv_error_state : nv_error {
 	nv_error_state(std::error_code __error)
-		: nv_error("operation attempted on an "
-			   "nvlist_t in an error state")
+		: nv_error("operation attempted on an nvlist_t in an error state")
 		, error(__error)
 	{
 	}
@@ -93,6 +92,7 @@ protected:
 	void __free_nv() noexcept;
 
 	void __throw_if_error() const;
+	void __throw_if_null() const;
 
 	::nvlist_t *__m_nv{};
 	__nvlist_owning __m_owning;
@@ -102,11 +102,11 @@ struct __const_nv_list : virtual __nv_list_base {
 	friend struct __nv_list;
 
 	/*
-	 * Write the contents of this nvlist to __fd or __fp in a
-	 * human-readable format suitable for debugging.
+	 * Write the contents of this nvlist to the given fd or file pointer in
+	 * a human-readable format suitable for debugging.
 	 */
-	void dump(int __fd) const noexcept;
-	void fdump(std::FILE *__fp) const noexcept;
+	void dump(int) const noexcept;
+	void fdump(std::FILE *) const noexcept;
 
 	/*
 	 * Return the number of bytes that would be required to call pack() on
@@ -154,74 +154,48 @@ struct __const_nv_list : virtual __nv_list_base {
 	 * Pack this nvlist and write it to the given file descriptor. On
 	 * error, throws std::system_error.
 	 */
-	void send(int __fd) const;
+	void send(int) const;
 
 	/*
 	 * if a key of any type with the given name exists, return true.
 	 */
-	[[nodiscard]] bool exists(std::string_view __key) const;
+	[[nodiscard]] bool exists(std::string_view) const;
 
 	/*
 	 * If a key of the given type with the given name exists, return true.
 	 */
-	[[nodiscard]] bool exists_type(std::string_view __key,
-				       int __type) const;
+	[[nodiscard]] bool exists_type(std::string_view, int) const;
 
 	/* exists */
 
-	[[nodiscard]] bool exists_null(std::string_view __key) const;
-	[[nodiscard]] bool exists_bool(std::string_view __key) const;
-	[[nodiscard]] bool exists_number(std::string_view __key) const;
-	[[nodiscard]] bool exists_string(std::string_view __key) const;
-	[[nodiscard]] bool exists_nvlist(std::string_view __key) const;
-	[[nodiscard]] bool exists_descriptor(std::string_view __key) const;
-	[[nodiscard]] bool exists_binary(std::string_view __key) const;
+	[[nodiscard]] bool exists_null(std::string_view) const;
+	[[nodiscard]] bool exists_bool(std::string_view) const;
+	[[nodiscard]] bool exists_number(std::string_view) const;
+	[[nodiscard]] bool exists_string(std::string_view) const;
+	[[nodiscard]] bool exists_nvlist(std::string_view) const;
+	[[nodiscard]] bool exists_descriptor(std::string_view) const;
+	[[nodiscard]] bool exists_binary(std::string_view) const;
 
-	[[nodiscard]] bool exists_bool_array(std::string_view __key) const;
-	[[nodiscard]] bool exists_number_array(std::string_view __key) const;
-	[[nodiscard]] bool exists_string_array(std::string_view __key) const;
-	[[nodiscard]] bool exists_nvlist_array(std::string_view __key) const;
-	[[nodiscard]] bool exists_descriptor_array(
-				std::string_view __key) const;
+	[[nodiscard]] bool exists_bool_array(std::string_view) const;
+	[[nodiscard]] bool exists_number_array(std::string_view) const;
+	[[nodiscard]] bool exists_string_array(std::string_view) const;
+	[[nodiscard]] bool exists_nvlist_array(std::string_view) const;
+	[[nodiscard]] bool exists_descriptor_array(std::string_view) const;
 
 	/* get */
 
-	[[nodiscard]] auto
-	get_bool(std::string_view __key) const -> bool;
+	[[nodiscard]] auto get_bool(std::string_view) const -> bool;
+	[[nodiscard]] auto get_number(std::string_view) const -> std::uint64_t;
+	[[nodiscard]] auto get_string(std::string_view) const -> std::string_view;
+	[[nodiscard]] auto get_nvlist(std::string_view) const -> const_nv_list;
+	[[nodiscard]] auto get_descriptor(std::string_view) const -> int;
+	[[nodiscard]] auto get_binary(std::string_view) const -> std::span<std::byte const>;
 
-	[[nodiscard]] auto
-	get_number(std::string_view __key) const -> std::uint64_t;
-
-	[[nodiscard]] auto
-	get_string(std::string_view __key) const -> std::string_view;
-
-	[[nodiscard]] auto
-	get_nvlist(std::string_view __key) const -> const_nv_list;
-
-	[[nodiscard]] auto
-	get_descriptor(std::string_view __key) const -> int;
-
-	[[nodiscard]] auto
-	get_binary(std::string_view key) const -> std::span<std::byte const>;
-
-	[[nodiscard]] auto
-	get_bool_array(std::string_view __key) const -> std::span<bool const>;
-
-	[[nodiscard]] auto
-	get_number_array(std::string_view __key) const 
-		-> std::span<std::uint64_t const>;
-
-	[[nodiscard]] auto
-	get_string_array(std::string_view __key) const
-		-> std::vector<std::string_view>;
-
-	[[nodiscard]] auto
-	get_nvlist_array(std::string_view name) const
-		-> std::vector<const_nv_list>;
-
-	[[nodiscard]] auto
-	get_descriptor_array(std::string_view __key) const
-		-> std::span<int const>;
+	[[nodiscard]] auto get_bool_array(std::string_view) const -> std::span<bool const>;
+	[[nodiscard]] auto get_number_array(std::string_view) const -> std::span<std::uint64_t const>;
+	[[nodiscard]] auto get_string_array(std::string_view) const -> std::vector<std::string_view>;
+	[[nodiscard]] auto get_nvlist_array(std::string_view) const -> std::vector<const_nv_list>;
+	[[nodiscard]] auto get_descriptor_array(std::string_view) const -> std::span<int const>;
 };
 
 struct __nv_list : virtual __nv_list_base {
@@ -230,7 +204,7 @@ struct __nv_list : virtual __nv_list_base {
 	/*
 	 * Set the error code on this nvlist to the given value.
 	 */
-	void set_error(int __error) noexcept;
+	void set_error(int) noexcept;
 
 	/*
 	 * Convert this nv_list into a const_nv_list.  This is a shallow copy
@@ -241,93 +215,75 @@ struct __nv_list : virtual __nv_list_base {
 
 	/* add */
 
-	void add_null(std::string_view __key);
-	void add_bool(std::string_view __key, bool);
-	void add_number(std::string_view __key, std::uint64_t);
-	void add_string(std::string_view __key, std::string_view);
-	void add_nvlist(std::string_view __key, const_nv_list const &);
-	void add_descriptor(std::string_view __key, int);
-	void add_binary(std::string_view __key, std::span<std::byte const>);
+	void add_null(std::string_view);
+	void add_bool(std::string_view, bool);
+	void add_number(std::string_view, std::uint64_t);
+	void add_string(std::string_view, std::string_view);
+	void add_nvlist(std::string_view, const_nv_list const &);
+	void add_descriptor(std::string_view, int);
+	void add_binary(std::string_view, std::span<std::byte const>);
 
-	void add_bool_array(std::string_view __key,
-			    std::span<bool const>);
-	void add_number_array(std::string_view __key,
-			      std::span<std::uint64_t const>);
-	void add_string_array(std::string_view __key,
-			      std::span<std::string_view const>);
-	void add_nvlist_array(std::string_view __key,
-			      std::span<const_nv_list const>);
-	void add_nvlist_array(std::string_view __key,
-			      std::span<nv_list const>);
-	void add_descriptor_array(std::string_view __key,
-				  std::span<int const>);
+	void add_bool_array(std::string_view, std::span<bool const>);
+	void add_number_array(std::string_view, std::span<std::uint64_t const>);
+	void add_string_array(std::string_view, std::span<std::string_view const>);
+	void add_nvlist_array(std::string_view, std::span<const_nv_list const>);
+	void add_nvlist_array(std::string_view, std::span<nv_list const>);
+	void add_descriptor_array(std::string_view, std::span<int const>);
 
 	/* free */
 
-	void free(std::string_view __key);
-	void free_type(std::string_view __key, int __type);
-	void free_null(std::string_view __key);
-	void free_bool(std::string_view __key);
-	void free_number(std::string_view __key);
-	void free_string(std::string_view __key);
-	void free_nvlist(std::string_view __key);
-	void free_descriptor(std::string_view __key);
-	void free_binary(std::string_view __key);
+	void free(std::string_view);
+	void free_type(std::string_view, int);
+	void free_null(std::string_view);
+	void free_bool(std::string_view);
+	void free_number(std::string_view);
+	void free_string(std::string_view);
+	void free_nvlist(std::string_view);
+	void free_descriptor(std::string_view);
+	void free_binary(std::string_view);
 
-	void free_bool_array(std::string_view __key);
-	void free_number_array(std::string_view __key);
-	void free_string_array(std::string_view __key);
-	void free_nvlist_array(std::string_view __key);
-	void free_descriptor_array(std::string_view __key);
+	void free_bool_array(std::string_view);
+	void free_number_array(std::string_view);
+	void free_string_array(std::string_view);
+	void free_nvlist_array(std::string_view);
+	void free_descriptor_array(std::string_view);
 
 	/* take */
 
-	[[nodiscard]] auto take_bool(std::string_view __key) -> bool;
-	[[nodiscard]] auto take_number(std::string_view __key)
-		-> std::uint64_t;
-	[[nodiscard]] auto take_string(std::string_view __key) -> std::string;
-	[[nodiscard]] auto take_nvlist(std::string_view __key) -> nv_list;
-	[[nodiscard]] auto take_descriptor(std::string_view __key) -> nv_fd;
-	[[nodiscard]] auto take_binary(std::string_view __key)
-		-> std::vector<std::byte>;
+	[[nodiscard]] auto take_bool(std::string_view) -> bool;
+	[[nodiscard]] auto take_number(std::string_view) -> std::uint64_t;
+	[[nodiscard]] auto take_string(std::string_view) -> std::string;
+	[[nodiscard]] auto take_nvlist(std::string_view) -> nv_list;
+	[[nodiscard]] auto take_descriptor(std::string_view) -> nv_fd;
+	[[nodiscard]] auto take_binary(std::string_view) -> std::vector<std::byte>;
 
-	[[nodiscard]] auto
-	take_bool_array(std::string_view __key) -> std::vector<bool>;
-
-	[[nodiscard]] auto
-	take_number_array(std::string_view __key)
-		-> std::vector<std::uint64_t>;
-
-	[[nodiscard]] auto
-	take_string_array(std::string_view __key) -> std::vector<std::string>;
-
-	[[nodiscard]] auto
-	take_nvlist_array(std::string_view __key) -> std::vector<nv_list>;
-
-	[[nodiscard]] auto
-	take_descriptor_array(std::string_view __key) -> std::vector<nv_fd>;
+	[[nodiscard]] auto take_bool_array(std::string_view) -> std::vector<bool>;
+	[[nodiscard]] auto take_number_array(std::string_view) -> std::vector<std::uint64_t>;
+	[[nodiscard]] auto take_string_array(std::string_view) -> std::vector<std::string>;
+	[[nodiscard]] auto take_nvlist_array(std::string_view) -> std::vector<nv_list>;
+	[[nodiscard]] auto take_descriptor_array(std::string_view) -> std::vector<nv_fd>;
 
 	/* move */
 
-	void move_string(std::string_view __key, char *);
-	void move_nvlist(std::string_view __key, nv_list &&);
-	void move_nvlist(std::string_view __key, ::nvlist_t *);
-	void move_descriptor(std::string_view __key, int);
-	void move_binary(std::string_view __key, std::span<std::byte>);
+	void move_string(std::string_view, char *);
+	void move_nvlist(std::string_view, nv_list &&);
+	void move_nvlist(std::string_view, ::nvlist_t *);
+	void move_descriptor(std::string_view, int);
+	void move_binary(std::string_view, std::span<std::byte>);
 
-	void move_bool_array(std::string_view __key, std::span<bool>);
-	void move_number_array(std::string_view __key, std::span<std::uint64_t>);
-	void move_string_array(std::string_view __key, std::span<char *>);
-	void move_nvlist_array(std::string_view __key, std::span<::nvlist_t *>);
-	void move_descriptor_array(std::string_view __key, std::span<int>);
+	void move_bool_array(std::string_view, std::span<bool>);
+	void move_number_array(std::string_view, std::span<std::uint64_t>);
+	void move_string_array(std::string_view, std::span<char *>);
+	void move_nvlist_array(std::string_view, std::span<::nvlist_t *>);
+	void move_descriptor_array(std::string_view, std::span<int>);
 
 	/* append */
 
-	void append_bool_array(std::string_view __key, bool);
-	void append_number_array(std::string_view __key, std::uint64_t);
-	void append_string_array(std::string_view __key, std::string_view);
-	void append_nvlist_array(std::string_view __key, const_nv_list const &);
-	void append_descriptor_array(std::string_view __key, int);
+	void append_bool_array(std::string_view, bool);
+	void append_number_array(std::string_view, std::uint64_t);
+	void append_string_array(std::string_view, std::string_view);
+	void append_nvlist_array(std::string_view, const_nv_list const &);
+	void append_descriptor_array(std::string_view, int);
 };
 
 } // namespace bsd::__detail
@@ -353,7 +309,7 @@ struct const_nv_list final
 	 * destruction.  If the nvlist_t is null, the const_nv_list will be
 	 * empty.
 	 */
-	explicit const_nv_list(::nvlist_t const *);
+	explicit const_nv_list(::nvlist_t const *) noexcept;
 
 	/*
 	 * Copy the nvlist pointer from an existing const_nv_list.  This does
@@ -398,7 +354,7 @@ struct nv_list final
 	/*
 	 * Create an nv_list object that refers to an existing nvlist_t.
 	 */
-	explicit nv_list(::nvlist_t *);
+	explicit nv_list(::nvlist_t *) noexcept;
 
 	/*
 	 * Create an nv_list object by copying an existing const_nv_list object
@@ -443,29 +399,24 @@ struct nv_list final
 	/*
 	 * Release the pointer held by this nv_list and return it.  The nv_list
 	 * will be left in a moved-from state and must not be used other than
-	 * to destruct it.
+	 * to assign to or destruct it.
 	 */
 	::nvlist_t *release() &&;
 
 	/*
 	 * Create and return an nv_list by calling nvlist_unpack() on the
-	 * provided buffer.  The __flags argument is passed to nvlist_unpack().
+	 * provided buffer.  The flags argument is passed to nvlist_unpack().
 	 * On failure, throws std::system_error.
 	 */
-	[[nodiscard]] static nv_list
-		unpack(std::span<std::byte> __data, int __flags = 0);
+	[[nodiscard]] static nv_list unpack(std::span<std::byte const>, int = 0);
 
 	/*
 	 * As the previous function, but the nv_list is unpacked from the
 	 * provided range, which must be a contiguous_range of value type
 	 * std::byte.
 	 */
-	template<std::ranges::contiguous_range _Range>
-		requires std::is_same_v<std::byte,
-			std::remove_cvref_t<
-				std::ranges::range_value_t<_Range>>>
-	[[nodiscard]] static nv_list
-		unpack(_Range const &__data, int __flags = 0)
+	[[nodiscard]] static nv_list unpack(std::ranges::contiguous_range auto &&__data,
+					    int __flags = 0)
 	{
 		return (unpack(std::span<std::byte>(__data), __flags));
 	}
@@ -474,7 +425,7 @@ struct nv_list final
 	 * Receive an nv_list from a file descriptor by calling nvlist_recv(),
 	 * to which flags is passed.  On failure, throws std::system_error.
 	 */
-	[[nodiscard]] static auto recv(int __fd, int __flags) -> nv_list;
+	[[nodiscard]] static auto recv(int, int) -> nv_list;
 
 	/*
 	 * Send an nv_list over a file descriptor and receive another nv_list
@@ -484,9 +435,7 @@ struct nv_list final
 	 * The source nv_list is moved-from and is left in an undefined state.
 	 * The returned nv_list is owning.
 	 */
-	[[nodiscard]] static nv_list xfer(int __fd,
-					  nv_list &&__source,
-					  int __flags);
+	[[nodiscard]] static nv_list xfer(int, nv_list &&, int);
 
 	void add_bool_range(std::string_view __key,
 			    std::ranges::range auto &&__value)

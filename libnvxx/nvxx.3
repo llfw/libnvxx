@@ -118,10 +118,10 @@ struct nv_list : <unspecified> {
 	explicit nv_list(int flags = 0);
 	explicit nv_list(::nvlist_t *);
 	nv_list(nv_list const &);
-	nv_list(nv_list &&);
+	nv_list(nv_list &&) noexcept;
 
 	nv_list &operator=(nv_list const &);
-	nv_list &operator=(nv_list &&);
+	nv_list &operator=(nv_list &&) noexcept;
 
 	::nvlist_t *ptr();
 	::nvlist_t const *ptr() const;
