@@ -317,6 +317,62 @@ TEST_CASE(nvxx_set_error_null)
 }
 
 /*
+ * pack/unpack
+ */
+
+TEST_CASE(nvxx_pack)
+{
+	using namespace std::literals;
+	auto key = "test number"sv;
+	auto value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto bytes = nvl.pack();
+
+	auto *nv = ::nvlist_unpack(bytes.data(), bytes.size(), 0);
+	ATF_REQUIRE_EQ(true, nv != nullptr);
+
+	ATF_REQUIRE_EQ(value, ::nvlist_get_number(nv, std::string(key).c_str()));
+}
+
+TEST_CASE(nvxx_pack_empty)
+{
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	ATF_REQUIRE_THROW(std::logic_error, (void)nvl.pack());
+}
+
+TEST_CASE(nvxx_pack_error)
+{
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+	ATF_REQUIRE_THROW(bsd::nv_error_state, (void)nvl.pack());
+}
+
+TEST_CASE(nvxx_unpack)
+{
+	using namespace std::literals;
+	auto key = "test number"sv;
+	auto value = 42u;
+
+	auto *nv = ::nvlist_create(0);
+	ATF_REQUIRE_EQ(true, nv != nullptr);
+	::nvlist_add_number(nv, std::string(key).c_str(), value);
+
+	auto size = std::size_t{};
+	auto *data = ::nvlist_pack(nv, &size);
+	ATF_REQUIRE_EQ(true, data != nullptr);
+
+	auto bytes = std::span{static_cast<std::byte const *>(data), size};
+	auto nvl = bsd::nv_list::unpack(bytes);
+
+	ATF_REQUIRE_EQ(value, nvl.get_number(key));
+}
+
+/*
  * exists(_type)
  */
 
@@ -1849,6 +1905,11 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_set_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_set_error_null);
 	ATF_ADD_TEST_CASE(tcs, nvxx_error_null);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_pack);
+	ATF_ADD_TEST_CASE(tcs, nvxx_pack_error);
+	ATF_ADD_TEST_CASE(tcs, nvxx_pack_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_unpack);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists);
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists_nul_key);
