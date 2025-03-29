@@ -10,6 +10,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <thread>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -526,8 +527,6 @@ TEST_CASE(nvxx_send_recv)
 
 TEST_CASE(nvxx_send_error)
 {
-	using namespace std::literals;
-
 	auto nvl = bsd::nv_list();
 	nvl.set_error(std::errc::invalid_argument);
 
@@ -553,6 +552,79 @@ TEST_CASE(nvxx_send_empty)
 	bsd::nv_fd fd1(fds[1]);
 
 	ATF_REQUIRE_THROW(std::logic_error, cnv.send(fd0.get()));
+}
+
+/*
+ * xfer
+ */
+
+TEST_CASE(nvxx_xfer)
+{
+	using namespace std::literals;
+	auto constexpr send_key = "test"sv;
+	auto constexpr send_value = 42u;
+	auto constexpr resp_key = "response"sv;
+
+	auto fds = std::array<int, 2>{};
+	auto ret = ::socketpair(AF_UNIX, SOCK_STREAM, 0, &fds[0]);
+	ATF_REQUIRE_EQ(0, ret);
+
+	bsd::nv_fd fd0(fds[0]);
+	bsd::nv_fd fd1(fds[1]);
+
+	/*
+	 * testing xfer() is a bit tricky because it blocks waiting for a
+	 * response.  create a thread that receives a list and sends its own in
+	 * response.
+	 */
+
+	auto respond_thread = std::thread([&] {
+		auto nvl2 = bsd::nv_list::recv(fd1.get());
+
+		auto resp_nvl = bsd::nv_list();
+		resp_nvl.add_number(resp_key, nvl2.get_number(send_key));
+		resp_nvl.send(fd1.get());
+	});
+
+	auto send_nvl = bsd::nv_list();
+	send_nvl.add_number(send_key, send_value);
+
+	auto nvl2 = std::move(send_nvl).xfer(fd0.get());
+	ATF_REQUIRE_EQ(send_value, nvl2.get_number(resp_key));
+
+	ATF_REQUIRE_THROW(std::logic_error, send_nvl.ptr());
+
+	respond_thread.join();
+}
+
+TEST_CASE(nvxx_xfer_error)
+{
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+
+	auto fds = std::array<int, 2>{};
+	auto ret = ::socketpair(AF_UNIX, SOCK_STREAM, 0, &fds[0]);
+	ATF_REQUIRE_EQ(0, ret);
+
+	bsd::nv_fd fd0(fds[0]);
+	bsd::nv_fd fd1(fds[1]);
+
+	ATF_REQUIRE_THROW(bsd::nv_error_state, (void)std::move(nvl).xfer(fd0.get()));
+}
+
+TEST_CASE(nvxx_xfer_empty)
+{
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	auto fds = std::array<int, 2>{};
+	auto ret = ::socketpair(AF_UNIX, SOCK_STREAM, 0, &fds[0]);
+	ATF_REQUIRE_EQ(0, ret);
+
+	bsd::nv_fd fd0(fds[0]);
+	bsd::nv_fd fd1(fds[1]);
+
+	ATF_REQUIRE_THROW(std::logic_error, (void)std::move(nvl).xfer(fd0.get()));
 }
 
 /*
@@ -2107,10 +2179,14 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_unpack);
 	ATF_ADD_TEST_CASE(tcs, nvxx_unpack_range);
 
-	ATF_ADD_TEST_CASE(tcs, nvxx_send_non_socket);
 	ATF_ADD_TEST_CASE(tcs, nvxx_send_recv);
+	ATF_ADD_TEST_CASE(tcs, nvxx_send_non_socket);
 	ATF_ADD_TEST_CASE(tcs, nvxx_send_empty);
 	ATF_ADD_TEST_CASE(tcs, nvxx_send_error);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_xfer);
+	ATF_ADD_TEST_CASE(tcs, nvxx_xfer_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_xfer_error);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists);
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists_nul_key);

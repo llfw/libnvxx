@@ -214,6 +214,16 @@ struct __nv_list : virtual __nv_list_base {
 	 */
 	operator const_nv_list() const;
 
+	/*
+	 * Send this nv_list over a file descriptor and receive another nv_list
+	 * in response, which is returned, by calling nvlist_xfer(). On
+	 * failure, throws std::system_error.
+	 *
+	 * The source nv_list is moved-from and is left in an undefined state.
+	 * The returned nv_list is owning.
+	 */
+	[[nodiscard]] nv_list xfer(int __fd, int __flags = 0) &&;
+
 	/* add */
 
 	void add_null(std::string_view);
@@ -433,16 +443,6 @@ struct nv_list final
 	 * to which flags is passed.  On failure, throws std::system_error.
 	 */
 	[[nodiscard]] static auto recv(int __fd, int __flags = 0) -> nv_list;
-
-	/*
-	 * Send an nv_list over a file descriptor and receive another nv_list
-	 * in response, which is returned, by calling nvlist_xfer(). On
-	 * failure, throws std::system_error.
-	 *
-	 * The source nv_list is moved-from and is left in an undefined state.
-	 * The returned nv_list is owning.
-	 */
-	[[nodiscard]] static nv_list xfer(int, nv_list &&, int);
 
 	void add_bool_range(std::string_view __key,
 			    std::ranges::range auto &&__value)

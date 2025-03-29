@@ -130,20 +130,6 @@ nv_list::recv(int fd, int flags)
 		std::error_code(errno, std::system_category()));
 }
 
-nv_list
-nv_list::xfer(int fd, nv_list &&nvl, int flags)
-{
-	if (auto *nv = ::nvlist_xfer(fd, nvl.__m_nv, flags);
-	    nv != nullptr) {
-		// nvlist_xfer destroys the original list
-		nvl.__m_nv = nullptr;
-		return (nv_list(nv));
-	}
-
-	throw std::system_error(
-		std::error_code(errno, std::system_category()));
-}
-
 namespace __detail {
 
 /*
@@ -162,6 +148,22 @@ __nv_list::set_error(std::errc error)
 __nv_list::operator const_nv_list() const
 {
 	return (const_nv_list(__m_nv));
+}
+
+nv_list
+__nv_list::xfer(int fd, int flags) &&
+{
+	__throw_if_error();
+
+	auto *nv = ::nvlist_xfer(fd, __m_nv, flags);
+	// nvlist_xfer always destroys the original list
+	__m_nv = nullptr;
+
+	if (nv != nullptr)
+		return (nv_list(nv));
+
+	throw std::system_error(
+		std::error_code(errno, std::system_category()));
 }
 
 void

@@ -134,6 +134,8 @@ struct nv_list : <unspecified> {
 
 	operator const_nv_list() const;
 
+	nv_list xfer(int fd, int flags = 0) &&;
+
 	void add_null(std::string_view key);
 	void add_bool(std::string_view key, bool value);
 	void add_number(std::string_view key, std::uint64_t);
@@ -601,6 +603,25 @@ state.
 If the nvlist is already in the error state, then an exception of type
 .Vt nv_error_state
 is thrown and the error state is not changed.
+.Pp
+The
+.Fn xfer
+function sends this nvlist over a socket as if by
+.Fn send ,
+and then receives a new nvlist from the same socket as if by
+.Fn recv ,
+which is returned.
+If
+.Fa flags
+is non-zero, the specified flags will be used to create the returned nvlist.
+The nvlist being sent is left in the empty state.
+If the nvlist is in the error state, an exception of type
+.Vt nv_error_state
+is thrown.
+If an operating system error occurs while writing to or reading from the file
+descriptor, an exception of type
+.Vt std::system_error
+is thrown and the nvlist being sent is left in the empty state.
 .Pp
 The
 .Fn add_null ,

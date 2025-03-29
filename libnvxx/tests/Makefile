@@ -9,6 +9,6 @@ CXXSTD=			c++23
 CXXFLAGS+=		-W -Wall -Wextra
 CFLAGS+=		-I${.CURDIR:H}
 LDFLAGS+=		-lprivateatf-c++ -L${.OBJDIR:H} -lnvxx
-LDFLAGS.nvxx_basic+=	-lnv
+LDFLAGS.nvxx_basic+=	-lnv -lpthread
 
 .include <bsd.test.mk>
