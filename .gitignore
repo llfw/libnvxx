@@ -10,5 +10,6 @@
 .depend*
 Kyuafile
 /libnvxx/tests/nvxx_basic
+/libnvxx/tests/nvxx_exception
 /libnvxx/tests/nvxx_iterator
 /libnvxx/tests/nvxx_serialize
