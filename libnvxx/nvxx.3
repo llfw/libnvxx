@@ -598,6 +598,9 @@ The
 .Fn set_error
 member function sets the given error on the nvlist, placing it in the error
 state.
+If the nvlist is already in the error state, then an exception of type
+.Vt nv_error_state
+is thrown and the error state is not changed.
 .Pp
 The
 .Fn add_null ,
