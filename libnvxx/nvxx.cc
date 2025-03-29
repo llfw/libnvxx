@@ -48,6 +48,8 @@ __nv_list_base::__free_nv() noexcept
 void
 __nv_list_base::__throw_if_error() const
 {
+	__throw_if_null();
+
 	if (auto err = ::nvlist_error(__m_nv); err != 0)
 		throw nv_error_state(std::error_code(err, std::generic_category()));
 }
