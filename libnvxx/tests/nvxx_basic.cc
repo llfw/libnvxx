@@ -29,6 +29,37 @@ TEST_CASE(nvxx_ctor_default)
 }
 
 /*
+ * error/set_error
+ */
+
+TEST_CASE(nvxx_set_error)
+{
+	auto nvl = bsd::nv_list();
+
+	ATF_REQUIRE_EQ(true, !nvl.error());
+	nvl.set_error(EINVAL);
+	ATF_REQUIRE_EQ(true, (nvl.error() == std::errc::invalid_argument));
+
+	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.set_error(EEXIST));
+}
+
+TEST_CASE(nvxx_error_null)
+{
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	ATF_REQUIRE_THROW(std::logic_error, (void)nvl.error());
+}
+
+TEST_CASE(nvxx_set_error_null)
+{
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	ATF_REQUIRE_THROW(std::logic_error, nvl.set_error(EINVAL));
+}
+
+/*
  * exists(_type)
  */
 
@@ -1533,6 +1564,10 @@ ATF_INIT_TEST_CASES(tcs)
 {
 	ATF_ADD_TEST_CASE(tcs, nvxx_ctor_default);
 	ATF_ADD_TEST_CASE(tcs, nvxx_ignore_case);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_set_error);
+	ATF_ADD_TEST_CASE(tcs, nvxx_set_error_null);
+	ATF_ADD_TEST_CASE(tcs, nvxx_error_null);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists);
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists_nul_key);

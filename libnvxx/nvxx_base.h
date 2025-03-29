@@ -128,7 +128,7 @@ struct __const_nv_list : virtual __nv_list_base {
 	 * Return the error code associated with this nvlist, if any, by
 	 * calling nvlist_error().
 	 */
-	[[nodiscard]] std::error_code error() const noexcept;
+	[[nodiscard]] std::error_code error() const;
 
 	/*
 	 * Return true if this nvlist is in a non-error state, otherwise false.
@@ -205,7 +205,7 @@ struct __nv_list : virtual __nv_list_base {
 	/*
 	 * Set the error code on this nvlist to the given value.
 	 */
-	void set_error(int) noexcept;
+	void set_error(int);
 
 	/*
 	 * Convert this nv_list into a const_nv_list.  This is a shallow copy

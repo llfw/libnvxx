@@ -142,8 +142,9 @@ namespace __detail {
  */
 
 void
-__nv_list::set_error(int error) noexcept
+__nv_list::set_error(int error)
 {
+	__throw_if_null();
 	// nvlist does not allow changing an existing error state
 	__throw_if_error();
 	::nvlist_set_error(__m_nv, error);

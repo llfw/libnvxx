@@ -60,8 +60,10 @@ const_nv_list::ptr() const
 namespace __detail {
 
 std::error_code
-__const_nv_list::error() const noexcept
+__const_nv_list::error() const
 {
+	__throw_if_null();
+
 	if (auto const err = ::nvlist_error(__m_nv); err != 0)
 		return (std::make_error_code(std::errc(err)));
 	return {};
