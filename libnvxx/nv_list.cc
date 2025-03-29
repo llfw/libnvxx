@@ -164,6 +164,7 @@ void
 __nv_list::free_type(std::string_view key, int type)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -181,6 +182,7 @@ void
 __nv_list::add_null(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -213,6 +215,7 @@ void
 __nv_list::add_bool(std::string_view key, bool value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -235,6 +238,7 @@ bool
 __nv_list::take_bool(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -254,6 +258,7 @@ std::vector<bool>
 __nv_list::take_bool_array(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto nitems = std::size_t{};
 	auto ptr = __ptr_guard(::nvlist_take_bool_array(
@@ -266,6 +271,7 @@ __nv_list::add_bool_array(std::string_view key,
 			  std::span<bool const> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -290,6 +296,7 @@ void
 __nv_list::move_bool_array(std::string_view key, std::span<bool> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_move_bool_array(__m_nv, std::string(key).c_str(),
 				 std::ranges::data(value),
@@ -300,6 +307,7 @@ void
 __nv_list::append_bool_array(std::string_view key, bool value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_append_bool_array(__m_nv, std::string(key).c_str(), value);
 }
@@ -318,6 +326,7 @@ void
 __nv_list::add_number(std::string_view key, std::uint64_t value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -340,6 +349,7 @@ std::uint64_t
 __nv_list::take_number(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -359,6 +369,7 @@ std::vector<std::uint64_t>
 __nv_list::take_number_array(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto nitems = std::size_t{};
 	auto ptr = __ptr_guard(
@@ -373,6 +384,7 @@ __nv_list::add_number_array(std::string_view key,
 			    std::span<std::uint64_t const> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -398,6 +410,7 @@ __nv_list::move_number_array(std::string_view key,
 			     std::span<std::uint64_t> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_move_number_array(__m_nv, std::string(key).c_str(),
 				   std::ranges::data(value),
@@ -408,6 +421,7 @@ void
 __nv_list::append_number_array(std::string_view key, std::uint64_t value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_append_number_array(__m_nv, std::string(key).c_str(), value);
 }
@@ -426,6 +440,8 @@ void
 __nv_list::add_string(std::string_view key, std::string_view value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
+	__check_string_null(value, "nv_list string values may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -448,6 +464,7 @@ void
 __nv_list::move_string(std::string_view key, char *value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_move_string(__m_nv, std::string(key).c_str(), value);
 }
@@ -456,6 +473,7 @@ std::string
 __nv_list::take_string(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -476,6 +494,10 @@ __nv_list::add_string_array(std::string_view key,
 			    std::span<std::string_view const> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
+
+	for (auto &str: value)
+		__check_string_null(str, "nv_list string values may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -511,6 +533,7 @@ __nv_list::move_string_array(std::string_view key,
 			     std::span<char *> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_move_string_array(__m_nv, std::string(key).c_str(),
 				   std::ranges::data(value),
@@ -521,6 +544,8 @@ void
 __nv_list::append_string_array(std::string_view key, std::string_view value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
+	__check_string_null(value, "nv_list string values may not contain NUL");
 
 	::nvlist_append_string_array(__m_nv, 
 				     std::string(key).c_str(), 
@@ -531,6 +556,7 @@ std::vector<std::string>
 __nv_list::take_string_array(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto nitems = std::size_t{};
 	auto *data = nvlist_take_string_array(__m_nv, std::string(key).c_str(),
@@ -554,6 +580,7 @@ void
 __nv_list::add_nvlist(std::string_view key, const_nv_list const &other)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -576,6 +603,7 @@ void
 __nv_list::move_nvlist(std::string_view key, nv_list &&value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_move_nvlist(__m_nv, std::string(key).c_str(),
 			     std::exchange(value.__m_nv, nullptr));
@@ -585,6 +613,7 @@ void
 __nv_list::move_nvlist(std::string_view key, ::nvlist_t *value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_move_nvlist(__m_nv, std::string(key).c_str(), value);
 }
@@ -593,6 +622,7 @@ nv_list
 __nv_list::take_nvlist(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -614,6 +644,7 @@ __nv_list::add_nvlist_array(std::string_view key,
 			    std::span<const_nv_list const> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -642,6 +673,7 @@ __nv_list::add_nvlist_array(std::string_view key,
 			    std::span<nv_list const> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -670,6 +702,7 @@ __nv_list::move_nvlist_array(std::string_view key,
 			     std::span<::nvlist_t *> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_move_nvlist_array(__m_nv, std::string(key).c_str(),
 				   std::ranges::data(value),
@@ -681,6 +714,7 @@ __nv_list::append_nvlist_array(std::string_view key,
 			       const_nv_list const &value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_append_nvlist_array(__m_nv, std::string(key).c_str(),
 				     value.__m_nv);
@@ -690,6 +724,7 @@ std::vector<nv_list>
 __nv_list::take_nvlist_array(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto nitems = std::size_t{};
 	auto ptr = __ptr_guard(
@@ -714,6 +749,7 @@ nv_fd
 __nv_list::take_descriptor(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto fd = ::nvlist_take_descriptor(__m_nv, std::string(key).c_str());
 	return (nv_fd(fd));
@@ -723,6 +759,7 @@ void
 __nv_list::add_descriptor(std::string_view key, int value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -745,6 +782,7 @@ void
 __nv_list::move_descriptor(std::string_view key, nv_fd &&fd)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_move_descriptor(__m_nv,
 				 std::string(key).c_str(),
@@ -761,6 +799,7 @@ void
 __nv_list::append_descriptor_array(std::string_view key, int value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_append_descriptor_array(__m_nv,
 					 std::string(key).c_str(),
@@ -772,6 +811,7 @@ __nv_list::add_descriptor_array(std::string_view key,
 				std::span<int const> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -796,6 +836,7 @@ void
 __nv_list::move_descriptor_array(std::string_view key, std::span<int> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_add_descriptor_array(__m_nv, std::string(key).c_str(),
 				      std::ranges::data(value),
@@ -812,6 +853,7 @@ std::vector<nv_fd>
 __nv_list::take_descriptor_array(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	/*
 	 * don't use nvlist_take_descriptor_array() here, because we don't
@@ -846,6 +888,7 @@ void
 __nv_list::add_binary(std::string_view key, std::span<std::byte const> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -870,6 +913,7 @@ void
 __nv_list::move_binary(std::string_view key, std::span<std::byte> value)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	::nvlist_move_binary(__m_nv, std::string(key).c_str(),
 			     std::ranges::data(value),
@@ -886,6 +930,7 @@ std::vector<std::byte>
 __nv_list::take_binary(std::string_view key)
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 

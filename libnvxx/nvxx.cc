@@ -50,4 +50,13 @@ __nv_list_base::__throw_if_null() const
 		throw std::logic_error("attempt to access a null nv_list");
 }
 
+void
+__nv_list_base::__check_string_null(std::string_view str,
+				    std::string_view error) const
+{
+	if (str.find('\0') == str.npos)
+		return;
+	throw std::runtime_error(std::string(error));
+}
+
 } // namespace bsd::__detail

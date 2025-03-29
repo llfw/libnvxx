@@ -93,6 +93,7 @@ protected:
 
 	void __throw_if_error() const;
 	void __throw_if_null() const;
+	void __check_string_null(std::string_view, std::string_view) const;
 
 	::nvlist_t *__m_nv{};
 	__nvlist_owning __m_owning;

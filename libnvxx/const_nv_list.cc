@@ -71,6 +71,8 @@ bool
 __const_nv_list::exists_type(std::string_view key, int type) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
+
 	return (::nvlist_exists_type(__m_nv, std::string(key).c_str(), type));
 }
 
@@ -174,6 +176,7 @@ bool
 __const_nv_list::get_bool(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -193,6 +196,7 @@ std::span<bool const>
 __const_nv_list::get_bool_array(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -218,6 +222,7 @@ std::uint64_t
 __const_nv_list::get_number(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -237,6 +242,7 @@ std::span<std::uint64_t const>
 __const_nv_list::get_number_array(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -262,6 +268,7 @@ std::string_view
 __const_nv_list::get_string(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -281,6 +288,7 @@ std::vector<std::string_view>
 __const_nv_list::get_string_array(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -308,6 +316,7 @@ const_nv_list
 __const_nv_list::get_nvlist(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -328,6 +337,7 @@ std::vector<const_nv_list>
 __const_nv_list::get_nvlist_array(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -348,6 +358,7 @@ int
 __const_nv_list::get_descriptor(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -361,6 +372,7 @@ std::span<int const>
 __const_nv_list::get_descriptor_array(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
@@ -399,6 +411,7 @@ std::span<std::byte const>
 __const_nv_list::get_binary(std::string_view key) const
 {
 	__throw_if_error();
+	__check_string_null(key, "nv_list keys may not contain NUL");
 
 	auto skey = std::string(key);
 
