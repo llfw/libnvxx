@@ -205,7 +205,7 @@ struct __nv_list : virtual __nv_list_base {
 	/*
 	 * Set the error code on this nvlist to the given value.
 	 */
-	void set_error(int);
+	void set_error(std::errc);
 
 	/*
 	 * Convert this nv_list into a const_nv_list.  This is a shallow copy

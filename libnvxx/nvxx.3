@@ -128,7 +128,7 @@ struct nv_list : <unspecified> {
 
 	::nvlist_t *release() &&;
 
-	void set_error(int error);
+	void set_error(std::errc error);
 
 	void free(std::string_view name);
 
@@ -594,6 +594,11 @@ and where
 is equal to
 .Vt T .
 .Sh NV_LIST OPERATIONS
+The
+.Fn set_error
+member function sets the given error on the nvlist, placing it in the error
+state.
+.Pp
 The
 .Fn add_null ,
 .Fn add_bool ,

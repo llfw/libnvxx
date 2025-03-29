@@ -37,10 +37,11 @@ TEST_CASE(nvxx_set_error)
 	auto nvl = bsd::nv_list();
 
 	ATF_REQUIRE_EQ(true, !nvl.error());
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_EQ(true, (nvl.error() == std::errc::invalid_argument));
 
-	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.set_error(EEXIST));
+	ATF_REQUIRE_THROW(bsd::nv_error_state,
+			  nvl.set_error(std::errc::invalid_argument));
 }
 
 TEST_CASE(nvxx_error_null)
@@ -56,7 +57,8 @@ TEST_CASE(nvxx_set_error_null)
 	auto nvl = bsd::nv_list();
 	auto nvl2 = std::move(nvl);
 
-	ATF_REQUIRE_THROW(std::logic_error, nvl.set_error(EINVAL));
+	ATF_REQUIRE_THROW(std::logic_error,
+			  nvl.set_error(std::errc::invalid_argument));
 }
 
 /*
@@ -203,7 +205,7 @@ TEST_CASE(nvxx_add_null_error)
 	auto constexpr key = "test_null"sv;
 
 	auto nvl = bsd::nv_list();
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_null(key));
 }
 
@@ -296,7 +298,7 @@ TEST_CASE(nvxx_add_bool_error)
 	auto constexpr value = true;
 
 	auto nvl = bsd::nv_list();
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_bool(key, value));
 }
 
@@ -421,7 +423,7 @@ TEST_CASE(nvxx_add_bool_array_error)
 	auto value = std::vector<bool>{true, false};
 
 	auto nvl = bsd::nv_list();
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_bool_range(key, value));
 }
 
@@ -558,7 +560,7 @@ TEST_CASE(nvxx_add_number_error)
 	auto constexpr value = 42_u64;
 
 	auto nvl = bsd::nv_list();
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 
 	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_number(key, value));
 }
@@ -684,7 +686,7 @@ TEST_CASE(nvxx_add_number_array_error)
 	auto value = std::vector<std::uint64_t>{42, 666};
 
 	auto nvl = bsd::nv_list();
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state,
 			  nvl.add_number_range(key, value));
 }
@@ -946,7 +948,7 @@ TEST_CASE(nvxx_add_string_error)
 	auto constexpr value = "test"sv;
 
 	auto nvl = bsd::nv_list{};
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_string(key, value));
 }
 
@@ -957,7 +959,7 @@ TEST_CASE(nvxx_add_string_array_error)
 	auto values = std::vector{"one"sv, "two"sv, "three"sv};
 
 	auto nvl = bsd::nv_list();
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state,
 			  nvl.add_string_range(key, values));
 }
@@ -1095,7 +1097,7 @@ TEST_CASE(nvxx_add_nvlist_error)
 	auto value = bsd::nv_list{};
 
 	auto nvl = bsd::nv_list{};
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_nvlist(key, value));
 }
 
@@ -1227,7 +1229,7 @@ TEST_CASE(nvxx_add_nvlist_array_error)
 	auto value = std::vector{bsd::nv_list{}, bsd::nv_list{}};
 
 	auto nvl = bsd::nv_list();
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state,
 			  nvl.add_nvlist_array(key, value));
 }
@@ -1340,7 +1342,7 @@ TEST_CASE(nvxx_add_descriptor_error)
 	auto key = "test_descriptor"sv;
 
 	auto nvl = bsd::nv_list{};
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state,
 			  nvl.add_descriptor(key, 0));
 }
@@ -1454,7 +1456,7 @@ TEST_CASE(nvxx_add_binary_error)
 	auto value = std::array<std::byte, 16>{};
 
 	auto nvl = bsd::nv_list();
-	nvl.set_error(EINVAL);
+	nvl.set_error(std::errc::invalid_argument);
 	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_binary(key, value));
 }
 
