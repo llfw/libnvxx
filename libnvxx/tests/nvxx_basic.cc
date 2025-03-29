@@ -319,6 +319,32 @@ TEST_CASE(nvxx_set_error_null)
 }
 
 /*
+ * flags
+ */
+
+TEST_CASE(nvxx_flags)
+{
+	auto nvl = bsd::nv_list(NV_FLAG_IGNORE_CASE);
+
+	ATF_REQUIRE_EQ(NV_FLAG_IGNORE_CASE, nvl.flags());
+}
+
+TEST_CASE(nvxx_flags_empty)
+{
+	auto cnv = bsd::const_nv_list();
+
+	ATF_REQUIRE_THROW(std::logic_error, (void)cnv.flags());
+}
+
+TEST_CASE(nvxx_flags_error)
+{
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+
+	ATF_REQUIRE_THROW(bsd::nv_error_state, (void)nvl.flags());
+}
+
+/*
  * pack/unpack
  */
 
@@ -2006,6 +2032,10 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_set_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_set_error_null);
 	ATF_ADD_TEST_CASE(tcs, nvxx_error_null);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_flags);
+	ATF_ADD_TEST_CASE(tcs, nvxx_flags_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_flags_error);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_pack);
 	ATF_ADD_TEST_CASE(tcs, nvxx_pack_error);

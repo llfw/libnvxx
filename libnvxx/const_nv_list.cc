@@ -94,7 +94,7 @@ __const_nv_list::empty() const noexcept
 }
 
 int
-__const_nv_list::flags() const noexcept
+__const_nv_list::flags() const
 {
 	__throw_if_error();
 	return (::nvlist_flags(__m_nv));

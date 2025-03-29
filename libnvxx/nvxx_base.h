@@ -143,7 +143,7 @@ struct __const_nv_list : virtual __nv_list_base {
 	/*
 	 * Return the flags used to create this nv_list.
 	 */
-	[[nodiscard]] int flags() const noexcept;
+	[[nodiscard]] int flags() const;
 
 	/*
 	 * Returns true if this nv_list is part of an array contained inside
