@@ -354,7 +354,7 @@ struct nv_list final
 	/*
 	 * Create an nv_list object that refers to an existing nvlist_t.
 	 */
-	explicit nv_list(::nvlist_t *) noexcept;
+	explicit nv_list(::nvlist_t *);
 
 	/*
 	 * Create an nv_list object by copying an existing const_nv_list object

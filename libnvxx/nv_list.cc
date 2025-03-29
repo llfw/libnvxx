@@ -15,29 +15,36 @@ namespace bsd {
  */
 
 nv_list::nv_list(int flags)
-	: __nv_list_base(flags)
+	: __nv_list_base(::nvlist_create(flags),
+			 __detail::__nvlist_owning::__owning)
 {
+	if (__m_nv == nullptr)
+		throw std::system_error(
+			std::error_code(errno, std::generic_category()));
 }
 
-nv_list::nv_list(::nvlist_t *nvl) noexcept
+nv_list::nv_list(::nvlist_t *nvl)
 	: __nv_list_base(nvl, __detail::__nvlist_owning::__owning)
 {
+	if (nvl == nullptr)
+		throw std::logic_error("attempt to create an nv_list from "
+				       "a null pointer");
 }
 
 nv_list::nv_list(const_nv_list const &other)
-	: __nv_list_base(::nvlist_clone(other.ptr()),
-			 __detail::__nvlist_owning::__owning)
+	: __nv_list_base(nullptr, __detail::__nvlist_owning::__owning)
 {
+	if (auto err = other.error(); err)
+		throw nv_error_state(err);
+
+	__m_nv = ::nvlist_clone(other.ptr());
 	if (__m_nv == nullptr)
 		throw std::system_error(std::error_code(errno, std::system_category()));
 }
 
 nv_list::nv_list(nv_list const &other)
-	: __nv_list_base(::nvlist_clone(other.__m_nv),
-			 __detail::__nvlist_owning::__owning)
+	: nv_list(static_cast<const_nv_list const &>(other))
 {
-	if (__m_nv == nullptr)
-		throw std::system_error(std::error_code(errno, std::system_category()));
 }
 
 nv_list::nv_list(nv_list &&other) noexcept

@@ -295,14 +295,6 @@ A
 .Vt const_nv_list
 provides all non-mutating operations on the nvlist, such as testing for the
 existence of a key, fetching a key, and packing or sending an nvlist.
-A
-.Vt const_nv_list
-can be constructed from an existing
-.Vt const nvlist_t * ,
-or from an
-.Vt nv_list ,
-or copy-constructed from another
-.Vt const_nv_list .
 Because
 .Vt const_nv_list
 is non-owning, it always refers to an existing nvlist and will never destroy
@@ -313,34 +305,91 @@ An
 provides all the operations that
 .Vt const_nv_list
 provides, plus additional mutating operations such as adding or removing keys.
-An
-.Vt nv_list
-can be constructed from an existing
-.Vt nvlist_t * ,
-in which case it will take ownership of the nvlist.
-It may also be copy-constructed from another
-.Vt nv_list
-or
-.Vt const_nv_list ,
-in which case it will duplicate the underlying list using
-.Xr nvlist_clone 3 ,
-and it may be default-constructed, in which case it will create a new nvlist
-using
-.Xr nvlist_create 3 .
-To pass flags to
-.Xr nvlist_create 3 ,
-use the optional
-.Fa "int flags"
-argument to the constructor.
 .Pp
 Both
 .Vt const_nv list
 and
 .Vt nv_list
-support copy-initialization and exception-free move-initialization.
-In addition,
+support default initialization, copy-initialization and exception-free
+move-initialization.
+.Sh CREATING AN NV_LIST
+A new
 .Vt nv_list
-supports default-initialization.
+can be created using the default constructor.
+This will create a new, empty
+.Vt nvlist_t
+using
+.Fn ::nvlist_create
+and take ownership of it.
+If the
+.Fa flags
+argument is non-zero, it will be passed to
+.Fn ::nvlist_create .
+If an error occurs while creating the nvlist, an exception of type
+.Vt std::system_error
+will be thrown.
+.Pp
+An
+.Vt nv_list
+can also be created by copying an existing
+.Vt nv_list
+or
+.Vt const_nv_list
+object, which will clone the underlying
+.Vt nvlist_t
+using
+.Fn ::nvlist_clone .
+If the nvlist being copied from is in the error state, an exception of type
+.Vt nv_error_state
+will be thrown.
+If an error occurs while cloning the list, an exception of type
+.Vt std::system_error
+will be thrown.
+.Pp
+An
+.Vt nv_list
+can also be created by providing an existing
+.Vt nvlist_t *
+pointer, in which case the
+.Vt nv_list
+will take ownership of the underlying list.
+This does not clone the original
+.Vt nvlist_t * .
+.Pp
+Finally, an
+.Vt nv_list
+can be created by moving an existing
+.Vt nv_list ,
+which will transfer ownership of the underlying nvlist and leave the moved-from
+object in an empty state.
+An
+.Vt nv_list
+in an empty state may be assigned to or destroyed, but no other options are
+possible.
+.Sh CREATING A CONST_NV_LIST
+A
+.Vt const_nv_list
+can be created using the default constructor.
+The new
+.Vt const_nv_list
+will be empty; it may be assigned to or destroyed, but no other operation is
+possible.
+.Pp
+A
+.Vt const_nv_list
+can be implictly created from an existing
+.Vt nv_list
+object using the
+.Fn "nv_list::operator const_nv_list"
+member function.
+.Pp
+Finally, a
+.Vt const_nv_list
+can be created from an existing
+.Vt nvlist_t *
+pointer, or an
+.Vt nv_list
+object.
 .Sh ERROR HANDLING
 The library defines a base error class called
 .Vt nv_error ,
@@ -553,7 +602,7 @@ If a value of the given name is already present in the nvlist, and the nvlist
 does not permit duplicate value names, then an exception of type
 .Vt nv_key_exists
 is thrown, and the nvlist is placed in the error state.
-If the nvlist is in an error state, then an exception of type
+If the nvlist is already in an error state, then an exception of type
 .Vt nv_error_state
 is thrown, and the key is not added.
 .Pp
@@ -566,7 +615,7 @@ prior to being added, and if later removed, will be closed using
 .Xr close 2 .
 The behaviour when attempting to add a duplicate value name is the same as
 described for the other
-.Fn add_
+.Fn add_<type>
 member functions.
 .Pp
 The
@@ -583,7 +632,7 @@ of the appropriate type; the value type of the span may be
 .Vt const .
 The behaviour when attempting to add a duplicate value name is the same as
 described for the
-.Fn add_
+.Fn add_<type>
 member functions.
 .Pp
 The
@@ -600,7 +649,7 @@ The value type of the range may be
 .Vt const .
 The behaviour when attempting to add a duplicate value name is the same as
 described for the
-.Fn add_
+.Fn add_<type>
 member functions.
 .Pp
 The
@@ -664,13 +713,13 @@ The
 .Fn move_string
 member function takes ownership of the provided string pointer, which must be a
 NUL-terminated C string allocated using
-.Fn std::malloc ,
+.Xr malloc 3 .
 and adds it to the nvlist.
 The string will later be freed using
-.Fn std::free .
+.Xr free 3 .
 The behaviour when attempting to add a duplicate value name is the same as
 described for the
-.Fn add_
+.Fn add_<type>
 member functions.
 .Pp
 The
@@ -679,7 +728,7 @@ member function takes ownership of the provided nvlist and adds it to the
 nvlist.
 The behaviour when attempting to add a duplicate value name is the same as
 described for the
-.Fn add_
+.Fn add_<type>
 member functions.
 .Pp
 The
@@ -700,13 +749,13 @@ and
 member functions take ownership of the provided C array of the given type
 and add it to the nvlist as an array.
 The array must be a C array which was previously allocated using
-.Fn std::malloc .
+.Xr malloc 3 .
 In the case of
 .Fn move_string_array
 and
 .Fn move_nvlist_array ,
 the nvlist takes ownership of the member values and will later free them using
-.Fn std::free
+.Xr free 3
 (for strings) or
 .Xr nvlist_destroy 3
 (for nvlists).
@@ -805,3 +854,5 @@ a schema may also be passed directly to
 .Fn nv_serialize
 and
 .Fn nv_deserialize .
+.Sh SEE ALSO
+.Xr nv 9
