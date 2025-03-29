@@ -205,6 +205,85 @@ TEST_CASE(nvxx_nv_list_release)
 }
 
 /*
+ * ptr
+ */
+
+TEST_CASE(nvxx_nv_list_ptr)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto *nv = nvl.ptr();
+	ATF_REQUIRE_EQ(value, ::nvlist_get_number(nv, std::string(key).c_str()));
+	::nvlist_add_number(nv, "test2", 666);
+	ATF_REQUIRE_EQ(666, nvl.get_number("test2"));
+}
+
+TEST_CASE(nvxx_nv_list_ptr_const)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto *nv = static_cast<bsd::nv_list const &>(nvl).ptr();
+	static_assert(std::is_const_v<std::remove_reference_t<decltype(*nv)>>);
+	ATF_REQUIRE_EQ(value, ::nvlist_get_number(nv, std::string(key).c_str()));
+}
+
+TEST_CASE(nvxx_nv_list_ptr_empty)
+{
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	ATF_REQUIRE_THROW(std::logic_error, nvl.ptr());
+}
+
+TEST_CASE(nvxx_nv_list_ptr_error)
+{
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+	ATF_REQUIRE_EQ(true, nvl.ptr() != nullptr);
+}
+
+TEST_CASE(nvxx_const_nv_list_ptr)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto cnv = bsd::const_nv_list(nvl);
+	auto *nv = cnv.ptr();
+	static_assert(std::is_const_v<std::remove_reference_t<decltype(*nv)>>);
+	ATF_REQUIRE_EQ(nvl.ptr(), nv);
+	ATF_REQUIRE_EQ(value, ::nvlist_get_number(nv, std::string(key).c_str()));
+}
+
+TEST_CASE(nvxx_const_nv_list_ptr_empty)
+{
+	auto cnv = bsd::const_nv_list();
+	ATF_REQUIRE_THROW(std::logic_error, cnv.ptr());
+}
+
+TEST_CASE(nvxx_const_nv_list_ptr_error)
+{
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+
+	auto cnv = bsd::const_nv_list(nvl);
+	ATF_REQUIRE_EQ(true, cnv.ptr() != nullptr);
+}
+
+/*
  * error/set_error
  */
 
@@ -1755,7 +1834,15 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_assign_move);
 	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_assign_const_nv_list);
 
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_ptr);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_ptr_const);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_ptr_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_ptr_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_release);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ptr);
+	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ptr_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ptr_error);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_ignore_case);
 
