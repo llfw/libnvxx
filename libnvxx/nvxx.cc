@@ -43,6 +43,7 @@ __nv_list_base::__free_nv() noexcept
 	if ((__m_nv != nullptr) &&
 	    (__m_owning == __nvlist_owning::__owning))
 		::nvlist_destroy(__m_nv);
+	__m_nv = nullptr;
 }
 
 void
