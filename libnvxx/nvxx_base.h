@@ -268,7 +268,7 @@ struct __nv_list : virtual __nv_list_base {
 	void move_string(std::string_view, char *);
 	void move_nvlist(std::string_view, nv_list &&);
 	void move_nvlist(std::string_view, ::nvlist_t *);
-	void move_descriptor(std::string_view, int);
+	void move_descriptor(std::string_view, nv_fd &&);
 	void move_binary(std::string_view, std::span<std::byte>);
 
 	void move_bool_array(std::string_view, std::span<bool>);

@@ -735,11 +735,13 @@ __nv_list::add_descriptor(std::string_view key, int value)
 }
 
 void
-__nv_list::move_descriptor(std::string_view key, int value)
+__nv_list::move_descriptor(std::string_view key, nv_fd &&fd)
 {
 	__throw_if_error();
 
-	::nvlist_move_descriptor(__m_nv, std::string(key).c_str(), value);
+	::nvlist_move_descriptor(__m_nv,
+				 std::string(key).c_str(),
+				 std::move(fd).release());
 }
 
 void

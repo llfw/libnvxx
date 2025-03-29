@@ -52,7 +52,7 @@ TEST_CASE(nvxx_basic_iterate)
 	nvl.add_string_range("a string array", string_array);
 
 	auto fdesc = fds[0];
-	nvl.move_descriptor("an fd", fdesc);
+	nvl.move_descriptor("an fd", bsd::nv_fd(fdesc));
 
 	nvl.add_descriptor_range("a descriptor array", fds2);
 

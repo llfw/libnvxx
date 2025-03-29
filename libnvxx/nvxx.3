@@ -144,7 +144,7 @@ struct nv_list : <unspecified> {
 	void add_binary_range(std::string_view key, std::ranges::range auto &&);
 
 	void move_string(std::string_view key, char *);
-	void move_descriptor(std::string_view key, int);
+	void move_descriptor(std::string_view key, nv_fd &&);
 	void move_binary(std::string_view key, std::span<std::byte>);
 	void move_nvlist(std::string_view key, nv_list &&);
 	void move_nvlist(std::string_view key, ::nvlist_t *);
