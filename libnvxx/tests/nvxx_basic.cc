@@ -372,6 +372,27 @@ TEST_CASE(nvxx_unpack)
 	ATF_REQUIRE_EQ(value, nvl.get_number(key));
 }
 
+TEST_CASE(nvxx_unpack_range)
+{
+	using namespace std::literals;
+	auto key = "test number"sv;
+	auto value = 42u;
+
+	auto *nv = ::nvlist_create(0);
+	ATF_REQUIRE_EQ(true, nv != nullptr);
+	::nvlist_add_number(nv, std::string(key).c_str(), value);
+
+	auto size = std::size_t{};
+	auto *data = ::nvlist_pack(nv, &size);
+	ATF_REQUIRE_EQ(true, data != nullptr);
+
+	auto bytes = std::span{static_cast<std::byte const *>(data), size}
+			| std::ranges::to<std::vector>();
+	auto nvl = bsd::nv_list::unpack(bytes);
+
+	ATF_REQUIRE_EQ(value, nvl.get_number(key));
+}
+
 /*
  * exists(_type)
  */
@@ -1910,6 +1931,7 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_pack_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_pack_empty);
 	ATF_ADD_TEST_CASE(tcs, nvxx_unpack);
+	ATF_ADD_TEST_CASE(tcs, nvxx_unpack_range);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists);
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists_nul_key);

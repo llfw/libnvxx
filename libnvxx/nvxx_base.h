@@ -425,7 +425,7 @@ struct nv_list final
 	[[nodiscard]] static nv_list unpack(std::ranges::contiguous_range auto &&__data,
 					    int __flags = 0)
 	{
-		return (unpack(std::span<std::byte>(__data), __flags));
+		return (unpack(std::span<std::byte const>(__data), __flags));
 	}
 
 	/*
