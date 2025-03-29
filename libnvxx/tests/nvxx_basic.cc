@@ -345,6 +345,30 @@ TEST_CASE(nvxx_flags_error)
 }
 
 /*
+ * operator bool
+ */
+
+TEST_CASE(nvxx_operator_bool)
+{
+	auto nvl = bsd::nv_list(NV_FLAG_IGNORE_CASE);
+
+	ATF_REQUIRE_EQ(true, static_cast<bool>(nvl));
+}
+
+TEST_CASE(nvxx_operator_bool_empty)
+{
+	auto cnv = bsd::const_nv_list();
+	ATF_REQUIRE_EQ(false, static_cast<bool>(cnv));
+}
+
+TEST_CASE(nvxx_operator_bool_error)
+{
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+	ATF_REQUIRE_EQ(false, static_cast<bool>(nvl));
+}
+
+/*
  * empty
  */
 
@@ -2072,6 +2096,10 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_empty);
 	ATF_ADD_TEST_CASE(tcs, nvxx_empty_empty);
 	ATF_ADD_TEST_CASE(tcs, nvxx_empty_error);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_operator_bool);
+	ATF_ADD_TEST_CASE(tcs, nvxx_operator_bool_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_operator_bool_error);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_pack);
 	ATF_ADD_TEST_CASE(tcs, nvxx_pack_error);

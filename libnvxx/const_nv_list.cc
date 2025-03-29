@@ -108,7 +108,7 @@ __const_nv_list::in_array() const noexcept
 
 __const_nv_list::operator bool() const noexcept
 {
-	return (::nvlist_error(__m_nv) == 0);
+	return ((__m_nv != nullptr) && (::nvlist_error(__m_nv) == 0));
 }
 
 void
