@@ -432,6 +432,12 @@ exception.
 The
 .Va nv_error_state::error
 member variable may then be used to determine which specific error occurred.
+.Sh KEY AND VALUE STRING RESTRICTIONS
+The underlying C library does not support keys or string values that contain
+the ASCII NUL character.
+Any attempt to add a string value containing a NUL character, or any value
+with a key containing a NUL character, will throw an exception of type
+.Vt std::runtime_error .
 .Sh THE NV_FD TYPE
 The C++ library uses a type called
 .Vt bsd::nv_fd
