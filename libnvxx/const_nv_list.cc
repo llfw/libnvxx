@@ -54,6 +54,7 @@ const_nv_list::operator=(nv_list const &other) noexcept
 ::nvlist_t const *
 const_nv_list::ptr() const
 {
+	__throw_if_null();
 	return (__m_nv);
 }
 

@@ -23,9 +23,115 @@
  * constructor tests
  */
 
-TEST_CASE(nvxx_ctor_default)
+TEST_CASE(nvxx_nv_list_ctor_default)
 {
 	auto nvl = bsd::nv_list();
+	ATF_REQUIRE_EQ(true, (nvl.ptr() != nullptr));
+}
+
+TEST_CASE(nvxx_nv_list_ctor_nvlist_t)
+{
+	auto nv = ::nvlist_create(0);
+	ATF_REQUIRE_EQ(true, nv != nullptr);
+
+	auto nvl = bsd::nv_list(nv);
+	ATF_REQUIRE_EQ(true, nvl.ptr() == nv);
+}
+
+TEST_CASE(nvxx_nv_list_ctor_const_nv_list)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto cnv = bsd::const_nv_list(nvl);
+	ATF_REQUIRE_EQ(true, nvl.ptr() == cnv.ptr());
+
+	auto nvl2 = bsd::nv_list(cnv);
+	ATF_REQUIRE_EQ(true, (cnv.ptr() != nvl2.ptr()));
+	ATF_REQUIRE_EQ(value, nvl2.get_number(key));
+}
+
+TEST_CASE(nvxx_nv_list_ctor_copy)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto nvl2 = bsd::nv_list(nvl);
+
+	ATF_REQUIRE_EQ(true, (nvl.ptr() != nvl2.ptr()));
+	ATF_REQUIRE_EQ(value, nvl.get_number(key));
+	ATF_REQUIRE_EQ(value, nvl2.get_number(key));
+}
+
+TEST_CASE(nvxx_nv_list_ctor_move)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto nvl2 = bsd::nv_list(std::move(nvl));
+
+	ATF_REQUIRE_THROW(std::logic_error, nvl.ptr());
+
+	ATF_REQUIRE_EQ(value, nvl2.get_number(key));
+}
+
+TEST_CASE(nvxx_const_nv_list_ctor_default)
+{
+	auto nvl = bsd::const_nv_list();
+	ATF_REQUIRE_THROW(std::logic_error, nvl.ptr());
+}
+
+TEST_CASE(nvxx_const_nv_list_ctor_nv_list)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto cnv = bsd::const_nv_list(nvl);
+
+	ATF_REQUIRE_EQ(nvl.ptr(), cnv.ptr());
+	ATF_REQUIRE_EQ(value, cnv.get_number(key));
+}
+
+TEST_CASE(nvxx_const_nv_list_ctor_nvlist_t)
+{
+	auto nv = ::nvlist_create(0);
+	ATF_REQUIRE_EQ(true, nv != nullptr);
+
+	auto cnv = bsd::const_nv_list(nv);
+	ATF_REQUIRE_EQ(true, cnv.ptr() == nv);
+}
+
+TEST_CASE(nvxx_const_nv_list_ctor_copy)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto cnv1 = bsd::const_nv_list(nvl);
+	auto cnv2 = bsd::const_nv_list(cnv1);
+
+	ATF_REQUIRE_EQ(cnv1.ptr(), cnv2.ptr());
+	ATF_REQUIRE_EQ(value, cnv1.get_number(key));
+	ATF_REQUIRE_EQ(value, cnv2.get_number(key));
 }
 
 /*
@@ -1564,7 +1670,17 @@ TEST_CASE(nvxx_add_binary_range)
 
 ATF_INIT_TEST_CASES(tcs)
 {
-	ATF_ADD_TEST_CASE(tcs, nvxx_ctor_default);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_ctor_default);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_ctor_const_nv_list);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_ctor_nvlist_t);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_ctor_copy);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_ctor_move);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ctor_default);
+	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ctor_copy);
+	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ctor_nv_list);
+	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ctor_nvlist_t);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_ignore_case);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_set_error);

@@ -82,12 +82,14 @@ nv_list::operator=(nv_list &&other) noexcept
 ::nvlist_t *
 nv_list::ptr()
 {
+	__throw_if_null();
 	return (__m_nv);
 }
 
 ::nvlist_t const *
 nv_list::ptr() const
 {
+	__throw_if_null();
 	return (__m_nv);
 }
 
