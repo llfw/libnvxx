@@ -116,10 +116,11 @@ __const_nv_list::send(int fd) const
 {
 	__throw_if_error();
 
-	if (::nvlist_send(fd, __m_nv) == 0)
-		return;
+	if (auto ret = ::nvlist_send(fd, __m_nv); ret != 0)
+		throw std::system_error(
+			std::make_error_code(static_cast<std::errc>(errno)));
 
-	throw std::system_error(error());
+	return;
 }
 
 void

@@ -432,7 +432,7 @@ struct nv_list final
 	 * Receive an nv_list from a file descriptor by calling nvlist_recv(),
 	 * to which flags is passed.  On failure, throws std::system_error.
 	 */
-	[[nodiscard]] static auto recv(int, int) -> nv_list;
+	[[nodiscard]] static auto recv(int __fd, int __flags = 0) -> nv_list;
 
 	/*
 	 * Send an nv_list over a file descriptor and receive another nv_list

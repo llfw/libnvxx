@@ -11,6 +11,8 @@
 #include <string>
 #include <string_view>
 
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <atf-c++.hpp>
 
 #include "nvxx.h"
@@ -391,6 +393,84 @@ TEST_CASE(nvxx_unpack_range)
 	auto nvl = bsd::nv_list::unpack(bytes);
 
 	ATF_REQUIRE_EQ(value, nvl.get_number(key));
+}
+
+TEST_CASE(nvxx_send_non_socket)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto fds = std::array<int, 2>{};
+	auto ret = ::pipe(&fds[0]);
+	ATF_REQUIRE_EQ(0, ret);
+
+	bsd::nv_fd fd0(fds[0]);
+	bsd::nv_fd fd1(fds[1]);
+
+	ATF_REQUIRE_THROW(std::system_error, nvl.send(fd0.get()));
+
+	try {
+		nvl.send(fd0.get());
+	} catch (std::system_error const &exc) {
+		ATF_REQUIRE_EQ(true, exc.code().value() == ENOTSOCK);
+	}
+}
+
+TEST_CASE(nvxx_send_recv)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto fds = std::array<int, 2>{};
+	auto ret = ::socketpair(AF_UNIX, SOCK_STREAM, 0, &fds[0]);
+	ATF_REQUIRE_EQ(0, ret);
+
+	bsd::nv_fd fd0(fds[0]);
+	bsd::nv_fd fd1(fds[1]);
+
+	nvl.send(fd0.get());
+
+	auto nvl2 = bsd::nv_list::recv(fd1.get());
+	ATF_REQUIRE_EQ(value, nvl2.get_number(key));
+}
+
+TEST_CASE(nvxx_send_error)
+{
+	using namespace std::literals;
+
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+
+	auto fds = std::array<int, 2>{};
+	auto ret = ::socketpair(AF_UNIX, SOCK_STREAM, 0, &fds[0]);
+	ATF_REQUIRE_EQ(0, ret);
+
+	bsd::nv_fd fd0(fds[0]);
+	bsd::nv_fd fd1(fds[1]);
+
+	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.send(fd0.get()));
+}
+
+TEST_CASE(nvxx_send_empty)
+{
+	auto cnv = bsd::const_nv_list();
+
+	auto fds = std::array<int, 2>{};
+	auto ret = ::socketpair(AF_UNIX, SOCK_STREAM, 0, &fds[0]);
+	ATF_REQUIRE_EQ(0, ret);
+
+	bsd::nv_fd fd0(fds[0]);
+	bsd::nv_fd fd1(fds[1]);
+
+	ATF_REQUIRE_THROW(std::logic_error, cnv.send(fd0.get()));
 }
 
 /*
@@ -1932,6 +2012,11 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_pack_empty);
 	ATF_ADD_TEST_CASE(tcs, nvxx_unpack);
 	ATF_ADD_TEST_CASE(tcs, nvxx_unpack_range);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_send_non_socket);
+	ATF_ADD_TEST_CASE(tcs, nvxx_send_recv);
+	ATF_ADD_TEST_CASE(tcs, nvxx_send_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_send_error);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists);
 	ATF_ADD_TEST_CASE(tcs, nvxx_exists_nul_key);
