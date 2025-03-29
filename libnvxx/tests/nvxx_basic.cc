@@ -775,6 +775,17 @@ TEST_CASE(nvxx_add_null_error)
 	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_null(key));
 }
 
+TEST_CASE(nvxx_add_null_empty)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_null"sv;
+
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	ATF_REQUIRE_THROW(std::logic_error, nvl.add_null(key));
+}
+
 TEST_CASE(nvxx_add_null_nul_key)
 {
 	using namespace std::literals;
@@ -784,7 +795,7 @@ TEST_CASE(nvxx_add_null_nul_key)
 	ATF_REQUIRE_THROW(std::runtime_error, nvl.add_null(key));
 }
 
-TEST_CASE(nvxx_add_duplicate_null)
+TEST_CASE(nvxx_add_null_duplicate)
 {
 	using namespace std::literals;
 	auto constexpr key = "test_null"sv;
@@ -829,6 +840,27 @@ TEST_CASE(nvxx_free_null_nonexistent)
 	ATF_REQUIRE_THROW(bsd::nv_key_not_found, nvl.free_null(key));
 }
 
+TEST_CASE(nvxx_free_null_error)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_null"sv;
+
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.free_null(key));
+}
+
+TEST_CASE(nvxx_free_null_empty)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_null"sv;
+
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	ATF_REQUIRE_THROW(std::logic_error, nvl.free_null(key));
+}
+
 /*
  * bool tests
  */
@@ -868,7 +900,18 @@ TEST_CASE(nvxx_add_bool_error)
 	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.add_bool(key, value));
 }
 
-TEST_CASE(nvxx_add_duplicate_bool)
+TEST_CASE(nvxx_add_bool_empty)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_bool"sv;
+	auto constexpr value = true;
+
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+	ATF_REQUIRE_THROW(std::logic_error, nvl.add_bool(key, value));
+}
+
+TEST_CASE(nvxx_add_bool_duplicate)
 {
 	using namespace std::literals;
 	auto constexpr key = "test_bool"sv;
@@ -882,13 +925,46 @@ TEST_CASE(nvxx_add_duplicate_bool)
 			     nvl.add_bool(key, value));
 }
 
-TEST_CASE(nvxx_get_nonexistent_bool)
+TEST_CASE(nvxx_get_bool_nonexistent)
 {
 	auto nvl = bsd::nv_list();
 
 	ATF_REQUIRE_THROW_RE(bsd::nv_key_not_found,
 			     "key \"nonesuch\" not found",
 			     (void)nvl.get_bool("nonesuch"));
+}
+
+TEST_CASE(nvxx_get_bool_error)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_bool"sv;
+	auto constexpr value = true;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_bool(key, value);
+	nvl.set_error(std::errc::invalid_argument);
+
+	ATF_REQUIRE_THROW(bsd::nv_error_state, (void)nvl.get_bool(key));
+}
+
+TEST_CASE(nvxx_get_bool_empty)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_bool"sv;
+
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	ATF_REQUIRE_THROW(std::logic_error, (void)nvl.get_bool(key));
+}
+
+TEST_CASE(nvxx_get_bool_nul_key)
+{
+	using namespace std::literals;
+	auto constexpr key = "test\0bool"sv;
+
+	auto nvl = bsd::nv_list();
+	ATF_REQUIRE_THROW(std::runtime_error, (void)nvl.get_bool(key));
 }
 
 TEST_CASE(nvxx_take_bool)
@@ -914,6 +990,27 @@ TEST_CASE(nvxx_take_bool_nul_key)
 
 	auto nvl = bsd::nv_list();
 	ATF_REQUIRE_THROW(std::runtime_error, (void)nvl.take_bool(key));
+}
+
+TEST_CASE(nvxx_take_bool_error)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+	ATF_REQUIRE_THROW(bsd::nv_error_state, (void)nvl.take_bool(key));
+}
+
+TEST_CASE(nvxx_take_bool_empty)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	ATF_REQUIRE_THROW(std::logic_error, (void)nvl.take_bool(key));
 }
 
 TEST_CASE(nvxx_free_bool)
@@ -944,6 +1041,27 @@ TEST_CASE(nvxx_free_bool_nonexistent)
 
 	auto nvl = bsd::nv_list();
 	ATF_REQUIRE_THROW(bsd::nv_key_not_found, nvl.free_bool(key));
+}
+
+TEST_CASE(nvxx_free_bool_error)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_null"sv;
+
+	auto nvl = bsd::nv_list();
+	nvl.set_error(std::errc::invalid_argument);
+	ATF_REQUIRE_THROW(bsd::nv_error_state, nvl.free_bool(key));
+}
+
+TEST_CASE(nvxx_free_bool_empty)
+{
+	using namespace std::literals;
+	auto constexpr key = "test_null"sv;
+
+	auto nvl = bsd::nv_list();
+	auto nvl2 = std::move(nvl);
+
+	ATF_REQUIRE_THROW(std::logic_error, nvl.free_bool(key));
 }
 
 TEST_CASE(nvxx_add_bool_array)
@@ -2200,21 +2318,36 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_type_nonexistent);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_null);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_null_empty);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_null_error);
-	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_null);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_null_duplicate);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_null_nul_key);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_null);
+	ATF_ADD_TEST_CASE(tcs, nvxx_free_null_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_free_null_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_null_nul_key);
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_null_nonexistent);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_empty);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_nul_key);
-	ATF_ADD_TEST_CASE(tcs, nvxx_add_duplicate_bool);
-	ATF_ADD_TEST_CASE(tcs, nvxx_get_nonexistent_bool);
+	ATF_ADD_TEST_CASE(tcs, nvxx_add_bool_duplicate);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_bool_nonexistent);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_bool_error);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_bool_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_get_bool_nul_key);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_take_bool);
+	ATF_ADD_TEST_CASE(tcs, nvxx_take_bool_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_take_bool_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_take_bool_nul_key);
+
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_bool);
+	ATF_ADD_TEST_CASE(tcs, nvxx_free_bool_empty);
+	ATF_ADD_TEST_CASE(tcs, nvxx_free_bool_error);
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_bool_nul_key);
 	ATF_ADD_TEST_CASE(tcs, nvxx_free_bool_nonexistent);
 
