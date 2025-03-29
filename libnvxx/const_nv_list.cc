@@ -87,7 +87,7 @@ __const_nv_list::exists(std::string_view key) const
 
 
 bool
-__const_nv_list::empty() const noexcept
+__const_nv_list::empty() const
 {
 	__throw_if_error();
 	return (::nvlist_empty(__m_nv));

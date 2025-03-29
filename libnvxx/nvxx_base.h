@@ -138,7 +138,7 @@ struct __const_nv_list : virtual __nv_list_base {
 	/*
 	 * Returns true if this nvlist is empty (contains no values).
 	 */
-	[[nodiscard]] bool empty() const noexcept;
+	[[nodiscard]] bool empty() const;
 
 	/*
 	 * Return the flags used to create this nv_list.
