@@ -56,14 +56,21 @@ nv_list::nv_list(nv_list &&other) noexcept
 nv_list &
 nv_list::operator=(nv_list const &other)
 {
-	if (this != &other) {
-		auto *clone = nvlist_clone(other.__m_nv);
-		if (clone == nullptr)
-			throw std::system_error(std::error_code(errno, std::system_category()));
-		__free_nv();
-		__m_nv = clone;
-		__m_owning = __detail::__nvlist_owning::__owning;
-	}
+	if (this != &other)
+		*this = const_nv_list(other);
+
+	return (*this);
+}
+
+nv_list &
+nv_list::operator=(const_nv_list const &other)
+{
+	auto *clone = nvlist_clone(other.ptr());
+	if (clone == nullptr)
+		throw std::system_error(std::error_code(errno, std::system_category()));
+	__free_nv();
+	__m_nv = clone;
+	__m_owning = __detail::__nvlist_owning::__owning;
 
 	return (*this);
 }

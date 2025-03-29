@@ -135,6 +135,76 @@ TEST_CASE(nvxx_const_nv_list_ctor_copy)
 }
 
 /*
+ * operator=
+ */
+
+TEST_CASE(nvxx_nv_list_assign_copy)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto nvl2 = bsd::nv_list();
+	nvl2 = nvl;
+	ATF_REQUIRE_EQ(false, nvl.ptr() == nvl2.ptr());
+	ATF_REQUIRE_EQ(value, nvl2.get_number(key));
+}
+
+TEST_CASE(nvxx_nv_list_assign_move)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+	auto old_ptr = nvl.ptr();
+
+	auto nvl2 = bsd::nv_list();
+	nvl2 = std::move(nvl);
+	ATF_REQUIRE_THROW(std::logic_error, nvl.ptr());
+	ATF_REQUIRE_EQ(old_ptr, nvl2.ptr());
+	ATF_REQUIRE_EQ(value, nvl2.get_number(key));
+}
+
+TEST_CASE(nvxx_nv_list_assign_const_nv_list)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto cnv = bsd::const_nv_list(nvl);
+
+	auto nvl2 = bsd::nv_list();
+	nvl2 = cnv;
+	ATF_REQUIRE_EQ(false, nvl2.ptr() == cnv.ptr());
+	ATF_REQUIRE_EQ(value, nvl2.get_number(key));
+}
+
+/*
+ * release
+ */
+TEST_CASE(nvxx_nv_list_release)
+{
+	using namespace std::literals;
+	auto constexpr key = "test"sv;
+	auto constexpr value = 42u;
+
+	auto nvl = bsd::nv_list();
+	nvl.add_number(key, value);
+
+	auto *nv = std::move(nvl).release();
+	ATF_REQUIRE_EQ(value, ::nvlist_get_number(nv, std::string(key).c_str()));
+	ATF_REQUIRE_THROW(std::logic_error, nvl.ptr());
+}
+
+/*
  * error/set_error
  */
 
@@ -1474,7 +1544,7 @@ TEST_CASE(nvxx_add_duplicate_descriptor)
 	auto guard = std::unique_ptr<int[],
 		decltype([](auto fds) {
 			::close(fds[0]);
-			::close(fds[1]); 
+			::close(fds[1]);
 		})>(&fds[0]);
 
 	auto nvl = bsd::nv_list{};
@@ -1497,7 +1567,7 @@ TEST_CASE(nvxx_free_descriptor_array)
 	auto guard = std::unique_ptr<int[],
 		decltype([](auto fds) {
 			::close(fds[0]);
-			::close(fds[1]); 
+			::close(fds[1]);
 		})>(&fds[0]);
 
 	auto nvl = bsd::nv_list{};
@@ -1680,6 +1750,12 @@ ATF_INIT_TEST_CASES(tcs)
 	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ctor_copy);
 	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ctor_nv_list);
 	ATF_ADD_TEST_CASE(tcs, nvxx_const_nv_list_ctor_nvlist_t);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_assign_copy);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_assign_move);
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_assign_const_nv_list);
+
+	ATF_ADD_TEST_CASE(tcs, nvxx_nv_list_release);
 
 	ATF_ADD_TEST_CASE(tcs, nvxx_ignore_case);
 

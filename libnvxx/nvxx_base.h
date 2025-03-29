@@ -383,6 +383,12 @@ struct nv_list final
 	nv_list &operator=(nv_list const &);
 
 	/*
+	 * Replace the wrapped nv_list with a copy of the RHS const_nv_list
+	 * using nvlist_clone().  On failure, throws std::system_error.
+	 */
+	nv_list &operator=(const_nv_list const &);
+
+	/*
 	 * Replace the wrapped nv_list by moving from another nv_list.  The
 	 * moved-from nv_list is left in an undefined state and must not be
 	 * accessed other than to destruct it.
