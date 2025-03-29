@@ -806,29 +806,29 @@ __nv_list::take_descriptor_array(std::string_view key)
 {
 	__throw_if_error();
 
-	// define this here to avoid throwing after we call
-	// nvlist_take_descriptor_array().
-	auto ret = std::vector<nv_fd>{};
+	/*
+	 * don't use nvlist_take_descriptor_array() here, because we don't
+	 * want to remove the array from the nvlist if vector allocation fails.
+	 */
+
+	auto skey = std::string(key);
 
 	auto nitems = std::size_t{};
-	auto ptr = __ptr_guard(
-		::nvlist_take_descriptor_array(__m_nv,
-					       std::string(key).c_str(),
-					       &nitems));
-	auto fds = std::span(ptr.__ptr, ptr.__ptr + nitems);
+	auto ptr = ::nvlist_get_descriptor_array(__m_nv, skey.c_str(), &nitems);
+	auto fds = std::span(ptr, ptr + nitems);
 
-	try {
-		ret.reserve(fds.size());
-		for (auto fd : fds)
-			ret.push_back(nv_fd(fd));
+	/*
+	 * reserve space before copying since creating an nv_fd will take
+	 * ownership of the fd, and we don't want to partially close the fds
+	 * if allocation fails.
+	 */
+	auto ret = std::vector<nv_fd>{};
+	ret.reserve(fds.size());
 
-		return ret;
-	} catch (...) {
-		// close all the fds we didn't manage to add to the vector
-		for (auto fd : fds.subspan(ret.size()))
-			(void)::close(fd);
-		throw;
-	}
+	std::ranges::copy(fds | construct<nv_fd>, std::back_inserter(ret));
+
+	::nvlist_free_descriptor_array(__m_nv, skey.c_str());
+	return ret;
 }
 
 /*
